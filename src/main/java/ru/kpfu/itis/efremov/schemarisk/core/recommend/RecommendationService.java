@@ -2,7 +2,6 @@ package ru.kpfu.itis.efremov.schemarisk.core.recommend;
 
 import org.springframework.stereotype.Service;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.FieldChange;
-import ru.kpfu.itis.efremov.schemarisk.core.diff.FieldChangeType;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
 import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
