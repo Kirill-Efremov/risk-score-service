@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.schema.ParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.schema.SchemaProvider;
+import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidSchemaException;
 
 @Component
 public class AvroSchemaProvider implements SchemaProvider {
@@ -18,7 +19,7 @@ public class AvroSchemaProvider implements SchemaProvider {
     @Override
     public ParsedSchema parseSchema(String schemaText) {
         if (schemaText == null || schemaText.isBlank()) {
-            throw new IllegalArgumentException("Schema text must not be null or blank");
+            throw new InvalidSchemaException("Schema text must not be null or blank");
         }
 
         try {
@@ -26,7 +27,7 @@ public class AvroSchemaProvider implements SchemaProvider {
             Schema avroSchema = parser.parse(schemaText);
             return new AvroParsedSchema(avroSchema, schemaText);
         } catch (SchemaParseException e) {
-            throw new IllegalArgumentException("Invalid Avro schema: " + e.getMessage(), e);
+            throw new InvalidSchemaException("Invalid Avro schema: " + e.getMessage(), e);
         }
     }
 }

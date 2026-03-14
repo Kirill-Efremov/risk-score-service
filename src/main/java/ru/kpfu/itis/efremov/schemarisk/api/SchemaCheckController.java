@@ -1,7 +1,11 @@
 package ru.kpfu.itis.efremov.schemarisk.api;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaCheckRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaCheckResponse;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.SchemaCheckService;
@@ -18,7 +22,7 @@ public class SchemaCheckController {
     }
 
     @PostMapping
-    public ResponseEntity<SchemaCheckResponse> check(@RequestBody SchemaCheckRequest request) {
+    public ResponseEntity<SchemaCheckResponse> check(@Valid @RequestBody SchemaCheckRequest request) {
         ResultWithAll all = schemaCheckService.checkSchemas(request);
 
         return ResponseEntity.ok(

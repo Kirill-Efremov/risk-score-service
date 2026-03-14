@@ -2,6 +2,7 @@ package ru.kpfu.itis.efremov.schemarisk.schema;
 
 import org.springframework.stereotype.Component;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
+import ru.kpfu.itis.efremov.schemarisk.support.exception.UnsupportedSchemaTypeException;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -21,7 +22,7 @@ public class SchemaProviderRegistry {
     public SchemaProvider getProvider(SchemaType type) {
         SchemaProvider provider = providers.get(type);
         if (provider == null) {
-            throw new IllegalArgumentException("No SchemaProvider registered for type: " + type);
+            throw new UnsupportedSchemaTypeException("No schema provider registered for type: " + type);
         }
         return provider;
     }

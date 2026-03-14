@@ -11,11 +11,12 @@ import ru.kpfu.itis.efremov.schemarisk.model.IssueSeverity;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.schema.ParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.schema.avro.AvroParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidRequestException;
+import ru.kpfu.itis.efremov.schemarisk.support.exception.UnsupportedSchemaTypeException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 
 @Component
 public class CompatibilityEngine {
@@ -26,7 +27,7 @@ public class CompatibilityEngine {
             CompatibilityMode mode
     ) {
         if (oldSchema.getSchemaType() != newSchema.getSchemaType()) {
-            throw new IllegalArgumentException("Schemas must have same type: old="
+            throw new InvalidRequestException("Schemas must have same type: old="
                     + oldSchema.getSchemaType() + ", new=" + newSchema.getSchemaType());
         }
 
@@ -42,7 +43,7 @@ public class CompatibilityEngine {
             return checkAvro((AvroParsedSchema) oldSchema, (AvroParsedSchema) newSchema, mode);
         }
 
-        throw new UnsupportedOperationException("Compatibility check not implemented for type: "
+        throw new UnsupportedSchemaTypeException("Compatibility check not implemented for type: "
                 + oldSchema.getSchemaType());
     }
 
@@ -92,6 +93,13 @@ public class CompatibilityEngine {
                     issues.addAll(toIssues(forward, "FORWARD"));
                 }
             }
+            case NONE -> {
+                return CompatibilityResult.builder()
+                        .compatible(true)
+                        .mode(mode)
+                        .issues(List.of())
+                        .build();
+            }
         }
 
         return CompatibilityResult.builder()
@@ -110,7 +118,7 @@ public class CompatibilityEngine {
         pair.getResult().getIncompatibilities().forEach(inc -> {
             String code = "AVRO_" + direction + "_" + inc.getType().name();
             String message = "[" + direction + "] " + inc.getMessage();
-            String location = inc.getLocation(); // например, $.fields[0].name
+            String location = inc.getLocation();
 
             result.add(Issue.builder()
                     .code(code)

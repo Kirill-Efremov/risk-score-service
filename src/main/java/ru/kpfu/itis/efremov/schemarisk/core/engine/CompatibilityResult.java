@@ -8,6 +8,7 @@ import ru.kpfu.itis.efremov.schemarisk.model.CompatibilityMode;
 import ru.kpfu.itis.efremov.schemarisk.model.Issue;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -15,7 +16,11 @@ import java.util.List;
 @AllArgsConstructor
 public class CompatibilityResult {
 
-    private boolean compatible;              // итог по выбранному режиму
-    private CompatibilityMode mode;          // BACKWARD / FORWARD / FULL / NONE
-    private List<Issue> issues;              // найденные проблемы (ERROR/WARNING)
+    private boolean compatible;
+    private CompatibilityMode mode;
+    private List<Issue> issues;
+
+    public List<Issue> getIssues() {
+        return Objects.requireNonNullElse(issues, List.of());
+    }
 }

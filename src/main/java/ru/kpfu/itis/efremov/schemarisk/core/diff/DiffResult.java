@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -15,4 +16,8 @@ public class DiffResult {
 
     private String schemaName;
     private List<FieldChange> changes;
+
+    public List<FieldChange> getChanges() {
+        return Objects.requireNonNullElse(changes, List.of());
+    }
 }
