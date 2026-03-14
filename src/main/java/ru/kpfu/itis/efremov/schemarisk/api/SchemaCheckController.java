@@ -8,29 +8,37 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaCheckRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaCheckResponse;
-import ru.kpfu.itis.efremov.schemarisk.core.engine.SchemaCheckService;
-import ru.kpfu.itis.efremov.schemarisk.core.engine.SchemaCheckService.ResultWithAll;
+import ru.kpfu.itis.efremov.schemarisk.application.usecase.AnalyzeSchemaChangeCommand;
+import ru.kpfu.itis.efremov.schemarisk.application.usecase.AnalyzeSchemaChangeResult;
+import ru.kpfu.itis.efremov.schemarisk.application.usecase.AnalyzeSchemaChangeUseCase;
 
 @RestController
 @RequestMapping("/api/v1/checks")
 public class SchemaCheckController {
 
-    private final SchemaCheckService schemaCheckService;
+    private final AnalyzeSchemaChangeUseCase analyzeSchemaChangeUseCase;
 
-    public SchemaCheckController(SchemaCheckService schemaCheckService) {
-        this.schemaCheckService = schemaCheckService;
+    public SchemaCheckController(AnalyzeSchemaChangeUseCase analyzeSchemaChangeUseCase) {
+        this.analyzeSchemaChangeUseCase = analyzeSchemaChangeUseCase;
     }
 
     @PostMapping
     public ResponseEntity<SchemaCheckResponse> check(@Valid @RequestBody SchemaCheckRequest request) {
-        ResultWithAll all = schemaCheckService.checkSchemas(request);
+        AnalyzeSchemaChangeResult result = analyzeSchemaChangeUseCase.analyze(
+                new AnalyzeSchemaChangeCommand(
+                        request.getSchemaType(),
+                        request.getCompatibilityMode(),
+                        request.getOldSchema(),
+                        request.getNewSchema()
+                )
+        );
 
         return ResponseEntity.ok(
                 SchemaCheckResponse.fromResult(
-                        all.compatibilityResult(),
-                        all.diffResult(),
-                        all.riskResult(),
-                        all.recommendations()
+                        result.compatibilityResult(),
+                        result.diffResult(),
+                        result.riskResult(),
+                        result.recommendations()
                 )
         );
     }

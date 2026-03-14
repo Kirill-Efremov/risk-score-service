@@ -1,4 +1,4 @@
-package ru.kpfu.itis.efremov.schemarisk.schema;
+package ru.kpfu.itis.efremov.schemarisk.infrastructure.schema;
 
 public record SchemaReference(
         String name,
@@ -6,4 +6,3 @@ public record SchemaReference(
         Integer version
 ) {
 }
-

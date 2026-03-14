@@ -1,9 +1,9 @@
-package ru.kpfu.itis.efremov.schemarisk.schema.avro;
+package ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro;
 
 import org.apache.avro.Schema;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.ParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.SchemaReference;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
-import ru.kpfu.itis.efremov.schemarisk.schema.ParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.schema.SchemaReference;
 
 import java.util.Collections;
 import java.util.List;

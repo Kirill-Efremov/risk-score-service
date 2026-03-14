@@ -1,4 +1,5 @@
-package ru.kpfu.itis.efremov.schemarisk.schema;
+package ru.kpfu.itis.efremov.schemarisk.infrastructure.schema;
+
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 
 public interface SchemaProvider {

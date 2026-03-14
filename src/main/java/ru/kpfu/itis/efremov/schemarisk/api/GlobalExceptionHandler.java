@@ -1,6 +1,7 @@
 package ru.kpfu.itis.efremov.schemarisk.api;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -8,10 +9,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.ApiErrorResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.ApiFieldError;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidRequestException;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidSchemaException;
+import ru.kpfu.itis.efremov.schemarisk.support.exception.ResourceNotFoundException;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.UnsupportedSchemaTypeException;
 
 import java.time.Instant;
@@ -38,6 +41,21 @@ public class GlobalExceptionHandler {
                 "Request validation failed",
                 request,
                 details
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentTypeMismatchException.class})
+    public ApiErrorResponse handleConstraintViolation(
+            Exception exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_REQUEST",
+                exception.getMessage(),
+                request,
+                List.of()
         );
     }
 
@@ -95,6 +113,21 @@ public class GlobalExceptionHandler {
         return buildError(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_REQUEST",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ApiErrorResponse handleNotFound(
+            ResourceNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "NOT_FOUND",
                 exception.getMessage(),
                 request,
                 List.of()

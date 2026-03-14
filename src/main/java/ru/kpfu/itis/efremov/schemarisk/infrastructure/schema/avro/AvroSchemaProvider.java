@@ -1,11 +1,11 @@
-package ru.kpfu.itis.efremov.schemarisk.schema.avro;
+package ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro;
 
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.springframework.stereotype.Component;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.ParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.SchemaProvider;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
-import ru.kpfu.itis.efremov.schemarisk.schema.ParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.schema.SchemaProvider;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidSchemaException;
 
 @Component

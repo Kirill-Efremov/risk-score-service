@@ -1,4 +1,4 @@
-package ru.kpfu.itis.efremov.schemarisk.schema;
+package ru.kpfu.itis.efremov.schemarisk.infrastructure.schema;
 
 import org.springframework.stereotype.Component;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;

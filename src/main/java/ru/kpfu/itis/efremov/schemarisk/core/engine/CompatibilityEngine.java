@@ -5,12 +5,12 @@ import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
 import org.springframework.stereotype.Component;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.ParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro.AvroParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.model.CompatibilityMode;
 import ru.kpfu.itis.efremov.schemarisk.model.Issue;
 import ru.kpfu.itis.efremov.schemarisk.model.IssueSeverity;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
-import ru.kpfu.itis.efremov.schemarisk.schema.ParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.schema.avro.AvroParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidRequestException;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.UnsupportedSchemaTypeException;
 

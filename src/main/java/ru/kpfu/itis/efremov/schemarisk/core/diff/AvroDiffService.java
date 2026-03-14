@@ -2,7 +2,7 @@ package ru.kpfu.itis.efremov.schemarisk.core.diff;
 
 import org.apache.avro.Schema;
 import org.springframework.stereotype.Service;
-import ru.kpfu.itis.efremov.schemarisk.schema.avro.AvroParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro.AvroParsedSchema;
 
 import java.util.*;
 

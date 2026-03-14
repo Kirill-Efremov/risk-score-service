@@ -1,0 +1,15 @@
+package ru.kpfu.itis.efremov.schemarisk.application.usecase;
+
+import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
+import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
+import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
+
+import java.util.List;
+
+public record AnalyzeSchemaChangeResult(
+        CompatibilityResult compatibilityResult,
+        DiffResult diffResult,
+        RiskResult riskResult,
+        List<String> recommendations
+) {
+}
