@@ -6,6 +6,7 @@ import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 import java.time.Instant;
 
 public record SchemaSubjectInfo(
+        Long id,
         String name,
         SchemaType schemaType,
         CompatibilityMode defaultCompatibilityMode,

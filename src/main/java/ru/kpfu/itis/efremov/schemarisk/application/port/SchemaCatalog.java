@@ -5,7 +5,7 @@ import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionIn
 
 import java.util.List;
 
-public interface SchemaCatalogPort {
+public interface SchemaCatalog {
 
     SchemaVersionInfo getLatestVersion(String subject);
 

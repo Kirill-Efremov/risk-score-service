@@ -3,18 +3,18 @@ package ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase;
 import org.springframework.stereotype.Service;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.RegisterSchemaVersionCommand;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionInfo;
-import ru.kpfu.itis.efremov.schemarisk.application.port.SchemaCatalogPort;
+import ru.kpfu.itis.efremov.schemarisk.application.port.SchemaCatalog;
 
 @Service
-public class RegisterSchemaVersionUseCase {
+public class RegisterSchemaVersionService {
 
-    private final SchemaCatalogPort schemaCatalogPort;
+    private final SchemaCatalog schemaCatalog;
 
-    public RegisterSchemaVersionUseCase(SchemaCatalogPort schemaCatalogPort) {
-        this.schemaCatalogPort = schemaCatalogPort;
+    public RegisterSchemaVersionService(SchemaCatalog schemaCatalog) {
+        this.schemaCatalog = schemaCatalog;
     }
 
     public SchemaVersionInfo register(RegisterSchemaVersionCommand command) {
-        return schemaCatalogPort.registerSchemaVersion(command);
+        return schemaCatalog.registerSchemaVersion(command);
     }
 }

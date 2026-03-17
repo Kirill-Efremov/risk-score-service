@@ -18,7 +18,7 @@ import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 import java.util.List;
 
 @Service
-public class AnalyzeSchemaChangeUseCase {
+public class SchemaAnalysisExecutor {
 
     private final SchemaProviderRegistry providerRegistry;
     private final CompatibilityEngine compatibilityEngine;
@@ -26,7 +26,7 @@ public class AnalyzeSchemaChangeUseCase {
     private final RiskScorer riskScorer;
     private final RecommendationService recommendationService;
 
-    public AnalyzeSchemaChangeUseCase(
+    public SchemaAnalysisExecutor(
             SchemaProviderRegistry providerRegistry,
             CompatibilityEngine compatibilityEngine,
             AvroDiffService avroDiffService,
@@ -40,7 +40,7 @@ public class AnalyzeSchemaChangeUseCase {
         this.recommendationService = recommendationService;
     }
 
-    public AnalyzeSchemaChangeResult analyze(AnalyzeSchemaChangeCommand command) {
+    public AnalyzeSchemaChangeResult execute(AnalyzeSchemaChangeCommand command) {
         SchemaProvider provider = providerRegistry.getProvider(command.schemaType());
 
         ParsedSchema oldSchema = provider.parseSchema(command.oldSchema());

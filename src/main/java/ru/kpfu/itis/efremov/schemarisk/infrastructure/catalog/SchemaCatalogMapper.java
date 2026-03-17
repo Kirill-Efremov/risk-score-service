@@ -11,6 +11,7 @@ public class SchemaCatalogMapper {
 
     public SchemaSubjectInfo toSubjectInfo(SchemaSubjectEntity entity) {
         return new SchemaSubjectInfo(
+                entity.getId(),
                 entity.getName(),
                 entity.getSchemaType(),
                 entity.getDefaultCompatibilityMode(),
@@ -21,6 +22,7 @@ public class SchemaCatalogMapper {
 
     public SchemaVersionInfo toVersionInfo(SchemaVersionEntity entity) {
         return new SchemaVersionInfo(
+                entity.getId(),
                 toSubjectInfo(entity.getSubject()),
                 entity.getVersion(),
                 entity.getSchemaText(),

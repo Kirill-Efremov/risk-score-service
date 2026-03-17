@@ -6,7 +6,7 @@ import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.RegisterSchemaV
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionInfo;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionStatus;
-import ru.kpfu.itis.efremov.schemarisk.application.port.SchemaCatalogPort;
+import ru.kpfu.itis.efremov.schemarisk.application.port.SchemaCatalog;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.catalog.persistence.entity.SchemaSubjectEntity;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.catalog.persistence.entity.SchemaVersionEntity;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.catalog.persistence.repository.SchemaSubjectRepository;
@@ -23,13 +23,13 @@ import java.util.HexFormat;
 import java.util.List;
 
 @Component
-public class LocalSchemaCatalogAdapter implements SchemaCatalogPort {
+public class LocalSchemaCatalog implements SchemaCatalog {
 
     private final SchemaSubjectRepository schemaSubjectRepository;
     private final SchemaVersionRepository schemaVersionRepository;
     private final SchemaCatalogMapper schemaCatalogMapper;
 
-    public LocalSchemaCatalogAdapter(
+    public LocalSchemaCatalog(
             SchemaSubjectRepository schemaSubjectRepository,
             SchemaVersionRepository schemaVersionRepository,
             SchemaCatalogMapper schemaCatalogMapper

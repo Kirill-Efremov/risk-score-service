@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.RegisterSchemaVersionRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaVersionResponse;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.RegisterSchemaVersionCommand;
-import ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase.GetSchemaVersionUseCase;
-import ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase.ListSchemaVersionsUseCase;
-import ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase.RegisterSchemaVersionUseCase;
+import ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase.GetSchemaVersionService;
+import ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase.ListSchemaVersionsService;
+import ru.kpfu.itis.efremov.schemarisk.application.catalog.usecase.RegisterSchemaVersionService;
 
 import java.util.List;
 
@@ -26,18 +26,18 @@ import java.util.List;
 @RequestMapping("/api/v1/subjects")
 public class SchemaCatalogController {
 
-    private final RegisterSchemaVersionUseCase registerSchemaVersionUseCase;
-    private final ListSchemaVersionsUseCase listSchemaVersionsUseCase;
-    private final GetSchemaVersionUseCase getSchemaVersionUseCase;
+    private final RegisterSchemaVersionService registerSchemaVersionService;
+    private final ListSchemaVersionsService listSchemaVersionsService;
+    private final GetSchemaVersionService getSchemaVersionService;
 
     public SchemaCatalogController(
-            RegisterSchemaVersionUseCase registerSchemaVersionUseCase,
-            ListSchemaVersionsUseCase listSchemaVersionsUseCase,
-            GetSchemaVersionUseCase getSchemaVersionUseCase
+            RegisterSchemaVersionService registerSchemaVersionService,
+            ListSchemaVersionsService listSchemaVersionsService,
+            GetSchemaVersionService getSchemaVersionService
     ) {
-        this.registerSchemaVersionUseCase = registerSchemaVersionUseCase;
-        this.listSchemaVersionsUseCase = listSchemaVersionsUseCase;
-        this.getSchemaVersionUseCase = getSchemaVersionUseCase;
+        this.registerSchemaVersionService = registerSchemaVersionService;
+        this.listSchemaVersionsService = listSchemaVersionsService;
+        this.getSchemaVersionService = getSchemaVersionService;
     }
 
     @PostMapping("/{subject}/versions")
@@ -46,7 +46,7 @@ public class SchemaCatalogController {
             @Valid @RequestBody RegisterSchemaVersionRequest request
     ) {
         SchemaVersionResponse response = SchemaVersionResponse.fromInfo(
-                registerSchemaVersionUseCase.register(
+                registerSchemaVersionService.register(
                         new RegisterSchemaVersionCommand(
                                 subject,
                                 request.getSchemaType(),
@@ -66,7 +66,7 @@ public class SchemaCatalogController {
     public ResponseEntity<List<SchemaVersionResponse>> listVersions(
             @PathVariable @NotBlank(message = "subject must not be blank") String subject
     ) {
-        List<SchemaVersionResponse> response = listSchemaVersionsUseCase.getVersions(subject)
+        List<SchemaVersionResponse> response = listSchemaVersionsService.getVersions(subject)
                 .stream()
                 .map(SchemaVersionResponse::fromInfo)
                 .toList();
@@ -79,7 +79,7 @@ public class SchemaCatalogController {
             @PathVariable @Positive(message = "version must be positive") int version
     ) {
         SchemaVersionResponse response = SchemaVersionResponse.fromInfo(
-                getSchemaVersionUseCase.getVersion(subject, version)
+                getSchemaVersionService.getVersion(subject, version)
         );
         return ResponseEntity.ok(response);
     }

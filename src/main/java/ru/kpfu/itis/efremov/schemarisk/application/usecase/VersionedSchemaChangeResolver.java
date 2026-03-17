@@ -5,17 +5,17 @@ import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.RegisterSchemaV
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionInfo;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionStatus;
-import ru.kpfu.itis.efremov.schemarisk.application.port.SchemaCatalogPort;
+import ru.kpfu.itis.efremov.schemarisk.application.port.SchemaCatalog;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidRequestException;
 
 @Component
 public class VersionedSchemaChangeResolver {
 
-    private final SchemaCatalogPort schemaCatalogPort;
+    private final SchemaCatalog schemaCatalog;
 
-    public VersionedSchemaChangeResolver(SchemaCatalogPort schemaCatalogPort) {
-        this.schemaCatalogPort = schemaCatalogPort;
+    public VersionedSchemaChangeResolver(SchemaCatalog schemaCatalog) {
+        this.schemaCatalog = schemaCatalog;
     }
 
     public ResolvedVersionedSchemaChange resolve(AnalyzeVersionedSchemaChangeCommand command) {
@@ -34,9 +34,9 @@ public class VersionedSchemaChangeResolver {
 
     private SchemaVersionInfo resolveOldSchema(AnalyzeVersionedSchemaChangeCommand command) {
         if (command.oldVersion() != null) {
-            return schemaCatalogPort.getVersion(command.subject(), command.oldVersion());
+            return schemaCatalog.getVersion(command.subject(), command.oldVersion());
         }
-        return schemaCatalogPort.getLatestVersion(command.subject());
+        return schemaCatalog.getLatestVersion(command.subject());
     }
 
     private SchemaVersionInfo resolveNewSchema(
@@ -44,14 +44,14 @@ public class VersionedSchemaChangeResolver {
             SchemaVersionInfo oldSchemaVersion
     ) {
         if (command.newVersion() != null) {
-            return schemaCatalogPort.getVersion(command.subject(), command.newVersion());
+            return schemaCatalog.getVersion(command.subject(), command.newVersion());
         }
 
         if (command.newSchema() == null || command.newSchema().isBlank()) {
             throw new InvalidRequestException("Either newVersion or newSchema must be provided");
         }
 
-        return schemaCatalogPort.registerSchemaVersion(
+        return schemaCatalog.registerSchemaVersion(
                 new RegisterSchemaVersionCommand(
                         command.subject(),
                         resolveSchemaType(command, oldSchemaVersion, null),
