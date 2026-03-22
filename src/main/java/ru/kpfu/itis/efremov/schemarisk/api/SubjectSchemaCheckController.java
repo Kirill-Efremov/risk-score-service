@@ -53,12 +53,7 @@ public class SubjectSchemaCheckController {
         );
 
         return ResponseEntity.ok(
-                SchemaCheckResponse.fromResult(
-                        result.compatibilityResult(),
-                        result.diffResult(),
-                        result.riskResult(),
-                        result.recommendations()
-                )
+                SchemaCheckResponse.fromResult(result)
         );
     }
 

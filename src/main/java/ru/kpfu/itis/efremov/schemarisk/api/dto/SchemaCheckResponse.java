@@ -2,6 +2,8 @@ package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
+import ru.kpfu.itis.efremov.schemarisk.application.usecase.AnalyzeSchemaChangeResult;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
 import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
@@ -23,12 +25,14 @@ public class SchemaCheckResponse {
     private String riskLevel;
     private String decision;
     private List<String> recommendations;
+    private ImpactResponse impact;
 
     public static SchemaCheckResponse fromResult(
             CompatibilityResult result,
             DiffResult diffResult,
             RiskResult riskResult,
-            List<String> recommendations
+            List<String> recommendations,
+            ImpactResult impactResult
     ) {
         return SchemaCheckResponse.builder()
                 .compatible(result.isCompatible())
@@ -39,6 +43,17 @@ public class SchemaCheckResponse {
                 .riskLevel(riskResult.getRiskLevel().name())
                 .decision(riskResult.getDecision().name())
                 .recommendations(Objects.requireNonNullElse(recommendations, List.of()))
+                .impact(ImpactResponse.fromResult(impactResult))
                 .build();
+    }
+
+    public static SchemaCheckResponse fromResult(AnalyzeSchemaChangeResult result) {
+        return fromResult(
+                result.compatibilityResult(),
+                result.diffResult(),
+                result.riskResult(),
+                result.recommendations(),
+                result.impact()
+        );
     }
 }

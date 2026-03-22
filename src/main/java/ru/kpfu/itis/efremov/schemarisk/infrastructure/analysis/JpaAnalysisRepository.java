@@ -54,6 +54,7 @@ public class JpaAnalysisRepository implements AnalysisRepository {
         entity.setRiskLevel(command.riskResult().getRiskLevel());
         entity.setDecision(command.riskResult().getDecision());
         entity.setRecommendationsJson(analysisJsonMapper.writeRecommendations(command.recommendations()));
+        entity.setImpactJson(analysisJsonMapper.writeImpact(command.impact()));
         entity.setCreatedAt(Instant.now());
         entity.setCreatedBy(command.createdBy());
 

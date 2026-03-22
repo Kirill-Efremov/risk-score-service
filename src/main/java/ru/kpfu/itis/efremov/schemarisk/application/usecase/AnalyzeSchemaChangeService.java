@@ -33,6 +33,7 @@ public class AnalyzeSchemaChangeService {
                         result.diffResult(),
                         result.riskResult(),
                         result.recommendations(),
+                        result.impact(),
                         null
                 )
         );

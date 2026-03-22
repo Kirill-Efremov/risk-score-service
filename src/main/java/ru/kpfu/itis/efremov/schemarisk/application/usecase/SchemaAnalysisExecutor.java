@@ -63,7 +63,8 @@ public class SchemaAnalysisExecutor {
                 compatibilityResult,
                 diffResult,
                 riskResult,
-                recommendations
+                recommendations,
+                null
         );
     }
 

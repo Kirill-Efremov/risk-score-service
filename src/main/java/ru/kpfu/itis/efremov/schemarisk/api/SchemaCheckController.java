@@ -46,12 +46,7 @@ public class SchemaCheckController {
         );
 
         return ResponseEntity.ok(
-                SchemaCheckResponse.fromResult(
-                        result.compatibilityResult(),
-                        result.diffResult(),
-                        result.riskResult(),
-                        result.recommendations()
-                )
+                SchemaCheckResponse.fromResult(result)
         );
     }
 

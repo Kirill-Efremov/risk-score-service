@@ -70,6 +70,9 @@ public class SchemaAnalysisEntity {
     @Column(name = "recommendations_json", nullable = false, columnDefinition = "text")
     private String recommendationsJson;
 
+    @Column(name = "impact_json", columnDefinition = "text")
+    private String impactJson;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 

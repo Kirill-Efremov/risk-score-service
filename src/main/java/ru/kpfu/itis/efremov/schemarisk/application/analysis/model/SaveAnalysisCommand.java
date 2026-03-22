@@ -1,5 +1,6 @@
 package ru.kpfu.itis.efremov.schemarisk.application.analysis.model;
 
+import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
 import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
@@ -17,6 +18,7 @@ public record SaveAnalysisCommand(
         DiffResult diffResult,
         RiskResult riskResult,
         List<String> recommendations,
+        ImpactResult impact,
         String createdBy
 ) {
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.model.Issue;
 
@@ -42,6 +43,17 @@ public class AnalysisJsonMapper {
     }
 
     public List<String> readRecommendations(String json) {
+        return readValue(json, new TypeReference<>() {});
+    }
+
+    public String writeImpact(ImpactResult impactResult) {
+        return impactResult == null ? null : writeValue(impactResult);
+    }
+
+    public ImpactResult readImpact(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
         return readValue(json, new TypeReference<>() {});
     }
 

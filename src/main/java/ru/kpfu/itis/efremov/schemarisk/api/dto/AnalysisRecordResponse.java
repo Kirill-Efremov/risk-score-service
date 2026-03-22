@@ -18,6 +18,7 @@ public record AnalysisRecordResponse(
         String riskLevel,
         String decision,
         List<String> recommendations,
+        ImpactResponse impact,
         Instant createdAt,
         String createdBy
 ) {
@@ -35,6 +36,7 @@ public record AnalysisRecordResponse(
                 record.riskLevel().name(),
                 record.decision().name(),
                 record.recommendations(),
+                ImpactResponse.fromResult(record.impact()),
                 record.createdAt(),
                 record.createdBy()
         );

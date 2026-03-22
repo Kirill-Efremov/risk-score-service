@@ -1,5 +1,6 @@
 package ru.kpfu.itis.efremov.schemarisk.application.usecase;
 
+import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
 import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
@@ -10,6 +11,7 @@ public record AnalyzeSchemaChangeResult(
         CompatibilityResult compatibilityResult,
         DiffResult diffResult,
         RiskResult riskResult,
-        List<String> recommendations
+        List<String> recommendations,
+        ImpactResult impact
 ) {
 }
