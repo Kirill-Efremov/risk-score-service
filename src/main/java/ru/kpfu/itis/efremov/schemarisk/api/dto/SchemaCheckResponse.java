@@ -1,5 +1,6 @@
 package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
@@ -15,16 +16,22 @@ import java.util.Objects;
 
 @Data
 @Builder
+@Schema(description = "Результат анализа схемы")
 public class SchemaCheckResponse {
 
+    @Schema(description = "Флаг совместимости", example = "true")
     private boolean compatible;
     private String mode;
     private List<Issue> issues;
     private DiffResult diff;
 
+    @Schema(description = "Числовая оценка риска", example = "65")
     private int riskScore;
+    @Schema(description = "Уровень риска", example = "MEDIUM")
     private String riskLevel;
+    @Schema(description = "Governance-решение", example = "REQUIRE_CONSUMER_UPGRADE_FIRST")
     private String decision;
+    @Schema(description = "Пояснение к решению")
     private List<String> decisionExplanation;
     private List<String> recommendations;
     private ImpactResponse impact;

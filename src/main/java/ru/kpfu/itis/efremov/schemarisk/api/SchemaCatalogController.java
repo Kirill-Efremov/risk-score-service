@@ -1,5 +1,12 @@
 package ru.kpfu.itis.efremov.schemarisk.api;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -12,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.kpfu.itis.efremov.schemarisk.api.dto.ApiErrorResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.RegisterSchemaVersionRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaVersionResponse;
 import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.RegisterSchemaVersionCommand;
@@ -24,6 +32,7 @@ import java.util.List;
 @Validated
 @RestController
 @RequestMapping("/api/v1/subjects")
+@Tag(name = "Schema Catalog", description = "Операции локального каталога схем")
 public class SchemaCatalogController {
 
     private final RegisterSchemaVersionService registerSchemaVersionService;
@@ -41,7 +50,19 @@ public class SchemaCatalogController {
     }
 
     @PostMapping("/{subject}/versions")
+    @Operation(summary = "Зарегистрировать новую версию схемы")
+    @ApiResponses({
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Ресурс не найден",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Конфликт состояния",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     public ResponseEntity<SchemaVersionResponse> registerVersion(
+            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,
             @Valid @RequestBody RegisterSchemaVersionRequest request
     ) {
@@ -63,7 +84,19 @@ public class SchemaCatalogController {
     }
 
     @GetMapping("/{subject}/versions")
+    @Operation(summary = "Получить список версий схемы")
+    @ApiResponses({
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Ресурс не найден",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Конфликт состояния",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     public ResponseEntity<List<SchemaVersionResponse>> listVersions(
+            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject
     ) {
         List<SchemaVersionResponse> response = listSchemaVersionsService.getVersions(subject)
@@ -74,8 +107,21 @@ public class SchemaCatalogController {
     }
 
     @GetMapping("/{subject}/versions/{version}")
+    @Operation(summary = "Получить конкретную версию схемы")
+    @ApiResponses({
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Ресурс не найден",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Конфликт состояния",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
     public ResponseEntity<SchemaVersionResponse> getVersion(
+            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,
+            @Parameter(description = "Номер версии схемы", example = "2")
             @PathVariable @Positive(message = "version must be positive") int version
     ) {
         SchemaVersionResponse response = SchemaVersionResponse.fromInfo(
