@@ -68,6 +68,7 @@ public class SchemaAnalysisExecutor {
                 recommendations,
                 null,
                 null,
+                null,
                 List.of()
         );
     }

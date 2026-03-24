@@ -1,5 +1,6 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.model;
 
+import ru.kpfu.itis.efremov.schemarisk.analysis.graph.dto.UsageGraphResponse;
 import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
@@ -14,6 +15,7 @@ public record AnalyzeSchemaChangeResult(
         RiskResult riskResult,
         List<String> recommendations,
         ImpactResult impact,
+        UsageGraphResponse impactGraph,
         GovernanceDecision governanceDecision,
         List<String> decisionExplanation
 ) {

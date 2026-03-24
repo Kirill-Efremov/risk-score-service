@@ -3,6 +3,7 @@ package ru.kpfu.itis.efremov.schemarisk.api.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -51,6 +52,67 @@ public class SubjectSchemaCheckController {
             description = "Анализирует изменение между версиями схем или draft-схемой."
     )
     @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Результат анализа",
+                    content = @Content(
+                            schema = @Schema(implementation = SchemaCheckResponse.class),
+                            examples = @ExampleObject(
+                                    name = "versioned-analysis-with-impact-graph",
+                                    value = """
+                                            {
+                                              "compatible": false,
+                                              "mode": "BACKWARD",
+                                              "issues": [],
+                                              "diff": null,
+                                              "riskScore": 65,
+                                              "riskLevel": "MEDIUM",
+                                              "decision": "REQUIRE_CONSUMER_UPGRADE_FIRST",
+                                              "decisionExplanation": [
+                                                "Breaking change detected",
+                                                "2 active consumers found"
+                                              ],
+                                              "recommendations": [
+                                                "Coordinate consumer updates before rollout"
+                                              ],
+                                              "impact": {
+                                                "affectedConsumersCount": 2,
+                                                "affectedProducersCount": 1,
+                                                "criticalServices": [
+                                                  "billing-service"
+                                                ],
+                                                "breaking": true
+                                              },
+                                              "impactGraph": {
+                                                "nodes": [
+                                                  {
+                                                    "id": "schema:user-created",
+                                                    "type": "SCHEMA",
+                                                    "label": "user-created",
+                                                    "impact": null,
+                                                    "critical": false
+                                                  },
+                                                  {
+                                                    "id": "service:billing-service",
+                                                    "type": "SERVICE",
+                                                    "label": "billing-service",
+                                                    "impact": "BREAKING",
+                                                    "critical": true
+                                                  }
+                                                ],
+                                                "edges": [
+                                                  {
+                                                    "from": "schema:user-created",
+                                                    "to": "service:billing-service",
+                                                    "type": "CONSUMER"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                            """
+                            )
+                    )
+            ),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Ресурс не найден",
@@ -61,7 +123,7 @@ public class SubjectSchemaCheckController {
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<SchemaCheckResponse> check(
-            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
+            @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,
             @Valid @RequestBody VersionedSchemaCheckRequest request
     ) {
@@ -82,7 +144,7 @@ public class SubjectSchemaCheckController {
     @GetMapping("/{subject}/checks")
     @Operation(
             summary = "Получить историю анализов по subject",
-            description = "Возвращает список анализов для указанного subject"
+            description = "Возвращает сохраненные анализы для указанного subject."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "400", description = "Некорректный запрос",
@@ -95,7 +157,7 @@ public class SubjectSchemaCheckController {
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<List<AnalysisRecordResponse>> listBySubject(
-            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
+            @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject
     ) {
         return ResponseEntity.ok(
@@ -105,7 +167,3 @@ public class SubjectSchemaCheckController {
         );
     }
 }
-
-
-
-

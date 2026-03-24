@@ -1,18 +1,17 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.diff;
 
-import org.apache.avro.Schema;
-import org.springframework.stereotype.Service;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.NormalizedField;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.NormalizedSchema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ChangeSeverityPolicy;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroSchemaProvider;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.avro.Schema;
+import org.springframework.stereotype.Service;
+
+import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroSchemaProvider;
+import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ChangeSeverityPolicy;
 
 @Service
 public class AvroDiffService {

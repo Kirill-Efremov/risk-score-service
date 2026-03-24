@@ -1,18 +1,17 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.compatibility;
 
-import org.apache.avro.Schema;
-import org.apache.avro.SchemaParseException;
-import org.springframework.stereotype.Component;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.NormalizedField;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.NormalizedSchema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.SchemaProvider;
-import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
-import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidSchemaException;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaParseException;
+import org.springframework.stereotype.Component;
+
+import ru.kpfu.itis.efremov.schemarisk.analysis.diff.NormalizedField;
+import ru.kpfu.itis.efremov.schemarisk.analysis.diff.NormalizedSchema;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidSchemaException;
+import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 @Component
 public class AvroSchemaProvider implements SchemaProvider {

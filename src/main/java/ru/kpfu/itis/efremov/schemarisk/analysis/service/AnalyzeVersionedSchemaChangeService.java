@@ -1,6 +1,8 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.service;
 
 import org.springframework.stereotype.Service;
+import ru.kpfu.itis.efremov.schemarisk.analysis.graph.UsageGraphService;
+import ru.kpfu.itis.efremov.schemarisk.analysis.graph.dto.UsageGraphResponse;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeCommand;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeVersionedSchemaChangeCommand;
@@ -28,6 +30,7 @@ public class AnalyzeVersionedSchemaChangeService {
     private final SchemaAnalysisExecutor schemaAnalysisExecutor;
     private final AnalysisRepository analysisRepository;
     private final ImpactAnalysisService impactAnalysisService;
+    private final UsageGraphService usageGraphService;
     private final RecommendationService recommendationService;
     private final SchemaProviderRegistry schemaProviderRegistry;
 
@@ -36,6 +39,7 @@ public class AnalyzeVersionedSchemaChangeService {
             SchemaAnalysisExecutor schemaAnalysisExecutor,
             AnalysisRepository analysisRepository,
             ImpactAnalysisService impactAnalysisService,
+            UsageGraphService usageGraphService,
             RecommendationService recommendationService,
             SchemaProviderRegistry schemaProviderRegistry
     ) {
@@ -43,6 +47,7 @@ public class AnalyzeVersionedSchemaChangeService {
         this.schemaAnalysisExecutor = schemaAnalysisExecutor;
         this.analysisRepository = analysisRepository;
         this.impactAnalysisService = impactAnalysisService;
+        this.usageGraphService = usageGraphService;
         this.recommendationService = recommendationService;
         this.schemaProviderRegistry = schemaProviderRegistry;
     }
@@ -62,6 +67,10 @@ public class AnalyzeVersionedSchemaChangeService {
                 resolvedChange.oldSchemaVersion().version(),
                 resolvedChange.newSchemaVersion().version(),
                 baseResult.compatibilityResult()
+        );
+        UsageGraphResponse impactGraph = usageGraphService.buildGraph(
+                resolvedChange.oldSchemaVersion().subject().name(),
+                impact
         );
         RiskResult adjustedRisk = applyImpactToRisk(baseResult.riskResult(), impact);
         String oldSchemaName = extractSchemaName(resolvedChange.schemaType(), resolvedChange.oldSchema());
@@ -87,6 +96,7 @@ public class AnalyzeVersionedSchemaChangeService {
                 adjustedRisk,
                 baseResult.recommendations(),
                 impact,
+                impactGraph,
                 governanceDecision,
                 decisionExplanation
         );

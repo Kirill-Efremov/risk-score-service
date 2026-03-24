@@ -1,12 +1,12 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.impact;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
-import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
+
+import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
 import ru.kpfu.itis.efremov.schemarisk.common.port.ServiceUsageRepository;
 import ru.kpfu.itis.efremov.schemarisk.usage.model.ServiceUsageInfo;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
-
-import java.util.List;
 
 @Service
 public class ImpactAnalysisService {

@@ -1,17 +1,17 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.governance;
 
-import org.springframework.stereotype.Service;
-import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.FieldChange;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
-import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
-import ru.kpfu.itis.efremov.schemarisk.common.model.Issue;
-import ru.kpfu.itis.efremov.schemarisk.common.model.IssueSeverity;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import org.springframework.stereotype.Service;
+
+import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.diff.FieldChange;
+import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
+import ru.kpfu.itis.efremov.schemarisk.common.model.Issue;
+import ru.kpfu.itis.efremov.schemarisk.common.model.IssueSeverity;
 
 @Service
 public class RecommendationService {

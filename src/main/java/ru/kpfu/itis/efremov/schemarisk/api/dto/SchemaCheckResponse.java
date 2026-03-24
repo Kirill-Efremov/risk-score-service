@@ -3,11 +3,12 @@ package ru.kpfu.itis.efremov.schemarisk.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
-import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
-import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
+import ru.kpfu.itis.efremov.schemarisk.analysis.graph.dto.UsageGraphResponse;
+import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
 import ru.kpfu.itis.efremov.schemarisk.common.model.Issue;
 
@@ -35,6 +36,8 @@ public class SchemaCheckResponse {
     private List<String> decisionExplanation;
     private List<String> recommendations;
     private ImpactResponse impact;
+    @Schema(description = "Граф влияния изменения схемы на сервисы")
+    private UsageGraphResponse impactGraph;
 
     public static SchemaCheckResponse fromResult(
             CompatibilityResult result,
@@ -43,7 +46,8 @@ public class SchemaCheckResponse {
             GovernanceDecision governanceDecision,
             List<String> decisionExplanation,
             List<String> recommendations,
-            ImpactResult impactResult
+            ImpactResult impactResult,
+            UsageGraphResponse impactGraph
     ) {
         return SchemaCheckResponse.builder()
                 .compatible(result.isCompatible())
@@ -56,6 +60,7 @@ public class SchemaCheckResponse {
                 .decisionExplanation(Objects.requireNonNullElse(decisionExplanation, List.of()))
                 .recommendations(Objects.requireNonNullElse(recommendations, List.of()))
                 .impact(ImpactResponse.fromResult(impactResult))
+                .impactGraph(impactGraph)
                 .build();
     }
 
@@ -67,11 +72,8 @@ public class SchemaCheckResponse {
                 result.governanceDecision(),
                 result.decisionExplanation(),
                 result.recommendations(),
-                result.impact()
+                result.impact(),
+                result.impactGraph()
         );
     }
 }
-
-
-
-

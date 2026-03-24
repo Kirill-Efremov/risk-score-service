@@ -1,12 +1,11 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.compatibility;
 
-import org.apache.avro.Schema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.SchemaReference;
-import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
-
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.avro.Schema;
+
+import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 public class AvroParsedSchema implements ParsedSchema {
 

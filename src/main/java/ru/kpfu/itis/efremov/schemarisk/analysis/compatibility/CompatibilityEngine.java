@@ -1,22 +1,21 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.compatibility;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaCompatibility;
 import org.apache.avro.SchemaCompatibility.SchemaCompatibilityType;
 import org.apache.avro.SchemaCompatibility.SchemaPairCompatibility;
 import org.springframework.stereotype.Component;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroParsedSchema;
+
+import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidRequestException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.UnsupportedSchemaTypeException;
 import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
 import ru.kpfu.itis.efremov.schemarisk.common.model.Issue;
 import ru.kpfu.itis.efremov.schemarisk.common.model.IssueSeverity;
 import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
-import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidRequestException;
-import ru.kpfu.itis.efremov.schemarisk.common.exception.UnsupportedSchemaTypeException;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @Component
 public class CompatibilityEngine {
