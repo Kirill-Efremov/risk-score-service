@@ -1,7 +1,7 @@
 package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
 
 import java.util.List;
 
@@ -28,3 +28,7 @@ public record ImpactResponse(
         );
     }
 }
+
+
+
+

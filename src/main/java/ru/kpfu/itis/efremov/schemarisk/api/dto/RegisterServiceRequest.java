@@ -15,3 +15,7 @@ public class RegisterServiceRequest {
     @Schema(description = "Признак критичности сервиса", example = "true")
     private boolean critical;
 }
+
+
+
+

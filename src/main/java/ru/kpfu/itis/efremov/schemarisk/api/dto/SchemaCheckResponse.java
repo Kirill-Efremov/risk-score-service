@@ -3,13 +3,13 @@ package ru.kpfu.itis.efremov.schemarisk.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
-import ru.kpfu.itis.efremov.schemarisk.application.recommendation.model.GovernanceDecision;
-import ru.kpfu.itis.efremov.schemarisk.application.usecase.AnalyzeSchemaChangeResult;
-import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
-import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
-import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
-import ru.kpfu.itis.efremov.schemarisk.model.Issue;
+import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
+import ru.kpfu.itis.efremov.schemarisk.common.model.Issue;
 
 import java.util.List;
 import java.util.Objects;
@@ -71,3 +71,7 @@ public class SchemaCheckResponse {
         );
     }
 }
+
+
+
+

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
-import ru.kpfu.itis.efremov.schemarisk.application.usage.model.ServiceRole;
+import ru.kpfu.itis.efremov.schemarisk.usage.model.ServiceRole;
 
 @Data
 @Schema(description = "Запрос на регистрацию использования схемы сервисом")
@@ -26,3 +26,7 @@ public class RegisterServiceUsageRequest {
     @Schema(description = "Флаг активности usage", example = "true")
     private Boolean active;
 }
+
+
+
+

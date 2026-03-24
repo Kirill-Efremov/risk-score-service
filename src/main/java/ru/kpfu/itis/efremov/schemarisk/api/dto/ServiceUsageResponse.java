@@ -1,7 +1,7 @@
 package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.kpfu.itis.efremov.schemarisk.application.usage.model.ServiceUsageInfo;
+import ru.kpfu.itis.efremov.schemarisk.usage.model.ServiceUsageInfo;
 
 import java.time.Instant;
 
@@ -49,3 +49,7 @@ public record ServiceUsageResponse(
         );
     }
 }
+
+
+
+

@@ -3,10 +3,10 @@ package ru.kpfu.itis.efremov.schemarisk.api.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaSourceType;
-import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionStatus;
-import ru.kpfu.itis.efremov.schemarisk.model.CompatibilityMode;
-import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
+import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
+import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaVersionStatus;
+import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
+import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 @Data
 public class RegisterSchemaVersionRequest {
@@ -27,3 +27,7 @@ public class RegisterSchemaVersionRequest {
 
     private String externalSchemaId;
 }
+
+
+
+

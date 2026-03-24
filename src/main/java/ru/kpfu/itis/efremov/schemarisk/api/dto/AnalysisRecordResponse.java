@@ -1,7 +1,7 @@
 package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.kpfu.itis.efremov.schemarisk.application.analysis.model.AnalysisRecord;
+import ru.kpfu.itis.efremov.schemarisk.history.model.AnalysisRecord;
 
 import java.time.Instant;
 import java.util.List;
@@ -59,3 +59,7 @@ public record AnalysisRecordResponse(
         );
     }
 }
+
+
+
+

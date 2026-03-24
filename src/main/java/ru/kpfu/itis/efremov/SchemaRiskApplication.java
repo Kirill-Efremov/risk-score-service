@@ -10,3 +10,4 @@ public class SchemaRiskApplication {
         SpringApplication.run(SchemaRiskApplication.class, args);
     }
 }
+

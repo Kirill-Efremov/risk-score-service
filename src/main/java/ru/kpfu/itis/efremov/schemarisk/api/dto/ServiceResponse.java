@@ -1,7 +1,7 @@
 package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.kpfu.itis.efremov.schemarisk.application.usage.model.ServiceInfo;
+import ru.kpfu.itis.efremov.schemarisk.usage.model.ServiceInfo;
 
 import java.time.Instant;
 
@@ -20,3 +20,7 @@ public record ServiceResponse(
         return new ServiceResponse(info.id(), info.name(), info.critical(), info.createdAt());
     }
 }
+
+
+
+

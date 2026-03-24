@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import ru.kpfu.itis.efremov.schemarisk.model.CompatibilityMode;
-import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
+import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
+import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 @Data
 @Schema(description = "Запрос на анализ изменения схемы")
@@ -32,3 +32,7 @@ public class SchemaCheckRequest {
     )
     private String newSchema;
 }
+
+
+
+

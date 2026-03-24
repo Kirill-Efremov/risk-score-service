@@ -1,0 +1,22 @@
+package ru.kpfu.itis.efremov.schemarisk.analysis.diff;
+
+public enum FieldChangeType {
+    ADDED,
+    REMOVED,
+    TYPE_CHANGED,
+    REQUIRED_ADDED,
+    OPTIONAL_ADDED,
+    REQUIRED_BECAME_OPTIONAL,
+    OPTIONAL_BECAME_REQUIRED,
+    NULLABILITY_CHANGED,
+    DEFAULT_ADDED,
+    DEFAULT_REMOVED,
+    DEFAULT_CHANGED,
+    NESTED_CHANGED,
+    OTHER
+}
+
+
+
+
+

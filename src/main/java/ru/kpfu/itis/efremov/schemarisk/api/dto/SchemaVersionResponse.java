@@ -1,6 +1,6 @@
 package ru.kpfu.itis.efremov.schemarisk.api.dto;
 
-import ru.kpfu.itis.efremov.schemarisk.application.catalog.model.SchemaVersionInfo;
+import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaVersionInfo;
 
 import java.time.Instant;
 
@@ -27,3 +27,7 @@ public record SchemaVersionResponse(
         );
     }
 }
+
+
+
+

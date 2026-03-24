@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
-import ru.kpfu.itis.efremov.schemarisk.model.CompatibilityMode;
-import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
+import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
+import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 @Data
 @Schema(description = "Запрос анализа версии схемы")
@@ -44,3 +44,7 @@ public class VersionedSchemaCheckRequest {
         return !hasNewSchema || schemaType != null;
     }
 }
+
+
+
+
