@@ -2,13 +2,31 @@ package ru.kpfu.itis.efremov.schemarisk.core.diff;
 
 import org.apache.avro.Schema;
 import org.springframework.stereotype.Service;
+import ru.kpfu.itis.efremov.schemarisk.core.model.NormalizedField;
+import ru.kpfu.itis.efremov.schemarisk.core.model.NormalizedSchema;
+import ru.kpfu.itis.efremov.schemarisk.core.policy.ChangeSeverityPolicy;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro.AvroParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro.AvroSchemaProvider;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class AvroDiffService {
+
+    private final AvroSchemaProvider avroSchemaProvider;
+    private final ChangeSeverityPolicy changeSeverityPolicy;
+
+    public AvroDiffService(
+            AvroSchemaProvider avroSchemaProvider,
+            ChangeSeverityPolicy changeSeverityPolicy
+    ) {
+        this.avroSchemaProvider = avroSchemaProvider;
+        this.changeSeverityPolicy = changeSeverityPolicy;
+    }
 
     public DiffResult diff(AvroParsedSchema oldSchema, AvroParsedSchema newSchema) {
         Schema oldRecord = oldSchema.getAvroSchema();
@@ -18,88 +36,162 @@ public class AvroDiffService {
             throw new IllegalArgumentException("AvroDiffService supports only record schemas");
         }
 
-        Map<String, Schema.Field> oldFields = toFieldMap(oldRecord.getFields());
-        Map<String, Schema.Field> newFields = toFieldMap(newRecord.getFields());
+        NormalizedSchema oldNormalized = avroSchemaProvider.normalize(oldSchema);
+        NormalizedSchema newNormalized = avroSchemaProvider.normalize(newSchema);
 
+        return DiffResult.builder()
+                .schemaName(newRecord.getFullName())
+                .changes(diffFields(oldNormalized, newNormalized, ""))
+                .build();
+    }
+
+    private List<FieldChange> diffFields(NormalizedSchema oldSchema, NormalizedSchema newSchema, String prefix) {
         List<FieldChange> changes = new ArrayList<>();
+        Set<String> fieldNames = new LinkedHashSet<>();
+        fieldNames.addAll(oldSchema.getFields().keySet());
+        fieldNames.addAll(newSchema.getFields().keySet());
 
-        for (Map.Entry<String, Schema.Field> entry : oldFields.entrySet()) {
-            String name = entry.getKey();
-            Schema.Field oldField = entry.getValue();
-            Schema.Field newField = newFields.get(name);
+        for (String fieldName : fieldNames) {
+            String path = prefix.isBlank() ? fieldName : prefix + "." + fieldName;
+            NormalizedField oldField = oldSchema.getFields().get(fieldName);
+            NormalizedField newField = newSchema.getFields().get(fieldName);
+
+            if (oldField == null) {
+                changes.add(buildChange(
+                        newField.isRequired() ? FieldChangeType.REQUIRED_ADDED : FieldChangeType.OPTIONAL_ADDED,
+                        path,
+                        null,
+                        newField.getType(),
+                        null,
+                        newField.getDefaultValue()
+                ));
+                continue;
+            }
 
             if (newField == null) {
-                changes.add(FieldChange.builder()
-                        .type(FieldChangeType.REMOVED)
-                        .fieldName(name)
-                        .oldType(oldField.schema().toString())
-                        .newType(null)
-                        .oldDefault(defaultToString(oldField.defaultVal()))
-                        .newDefault(null)
-                        .build());
-            } else {
-                String oldType = oldField.schema().toString();
-                String newType = newField.schema().toString();
-                Object oldDef = oldField.defaultVal();
-                Object newDef = newField.defaultVal();
+                changes.add(buildChange(
+                        FieldChangeType.REMOVED,
+                        path,
+                        oldField.getType(),
+                        null,
+                        oldField.getDefaultValue(),
+                        null
+                ));
+                continue;
+            }
 
-                if (!Objects.equals(oldType, newType)) {
-                    changes.add(FieldChange.builder()
-                            .type(FieldChangeType.TYPE_CHANGED)
-                            .fieldName(name)
-                            .oldType(oldType)
-                            .newType(newType)
-                            .oldDefault(defaultToString(oldDef))
-                            .newDefault(defaultToString(newDef))
-                            .build());
-                } else if (!Objects.equals(defaultToString(oldDef), defaultToString(newDef))) {
-                    FieldChangeType changeType =
-                            oldDef == null && newDef != null ? FieldChangeType.DEFAULT_ADDED :
-                                    oldDef != null && newDef == null ? FieldChangeType.DEFAULT_REMOVED :
-                                            FieldChangeType.OTHER;
+            if (!Objects.equals(oldField.getType(), newField.getType())) {
+                changes.add(buildChange(
+                        FieldChangeType.TYPE_CHANGED,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+                continue;
+            }
 
-                    changes.add(FieldChange.builder()
-                            .type(changeType)
-                            .fieldName(name)
-                            .oldType(oldType)
-                            .newType(newType)
-                            .oldDefault(defaultToString(oldDef))
-                            .newDefault(defaultToString(newDef))
-                            .build());
+            if (oldField.isNullable() != newField.isNullable()) {
+                changes.add(buildChange(
+                        FieldChangeType.NULLABILITY_CHANGED,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+            }
+
+            if (oldField.isRequired() && !newField.isRequired()) {
+                changes.add(buildChange(
+                        FieldChangeType.REQUIRED_BECAME_OPTIONAL,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+            } else if (!oldField.isRequired() && newField.isRequired()) {
+                changes.add(buildChange(
+                        FieldChangeType.OPTIONAL_BECAME_REQUIRED,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+            }
+
+            if (!oldField.hasDefault() && newField.hasDefault()) {
+                changes.add(buildChange(
+                        FieldChangeType.DEFAULT_ADDED,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+            } else if (oldField.hasDefault() && !newField.hasDefault()) {
+                changes.add(buildChange(
+                        FieldChangeType.DEFAULT_REMOVED,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+            } else if (oldField.hasDefault()
+                    && newField.hasDefault()
+                    && !Objects.equals(oldField.getDefaultValue(), newField.getDefaultValue())) {
+                changes.add(buildChange(
+                        FieldChangeType.DEFAULT_CHANGED,
+                        path,
+                        oldField.getType(),
+                        newField.getType(),
+                        oldField.getDefaultValue(),
+                        newField.getDefaultValue()
+                ));
+            }
+
+            if ("record".equals(oldField.getType())
+                    && "record".equals(newField.getType())
+                    && oldField.getNestedSchema() != null
+                    && newField.getNestedSchema() != null) {
+                List<FieldChange> nestedChanges = diffFields(oldField.getNestedSchema(), newField.getNestedSchema(), path);
+                if (!nestedChanges.isEmpty()) {
+                    changes.add(buildChange(
+                            FieldChangeType.NESTED_CHANGED,
+                            path,
+                            oldField.getType(),
+                            newField.getType(),
+                            oldField.getDefaultValue(),
+                            newField.getDefaultValue()
+                    ));
                 }
             }
         }
 
-        for (Map.Entry<String, Schema.Field> entry : newFields.entrySet()) {
-            String name = entry.getKey();
-            if (!oldFields.containsKey(name)) {
-                Schema.Field newField = entry.getValue();
-                changes.add(FieldChange.builder()
-                        .type(FieldChangeType.ADDED)
-                        .fieldName(name)
-                        .oldType(null)
-                        .newType(newField.schema().toString())
-                        .oldDefault(null)
-                        .newDefault(defaultToString(newField.defaultVal()))
-                        .build());
-            }
-        }
+        return changes;
+    }
 
-        return DiffResult.builder()
-                .schemaName(newRecord.getFullName())
-                .changes(changes)
+    private FieldChange buildChange(
+            FieldChangeType changeType,
+            String fieldName,
+            String oldType,
+            String newType,
+            String oldDefault,
+            String newDefault
+    ) {
+        return FieldChange.builder()
+                .changeType(changeType)
+                .fieldName(fieldName)
+                .oldType(oldType)
+                .newType(newType)
+                .oldDefault(oldDefault)
+                .newDefault(newDefault)
+                .severity(changeSeverityPolicy.severityOf(changeType))
+                .breaking(changeSeverityPolicy.isBreaking(changeType))
                 .build();
-    }
-
-    private Map<String, Schema.Field> toFieldMap(List<Schema.Field> fields) {
-        Map<String, Schema.Field> map = new LinkedHashMap<>();
-        for (Schema.Field f : fields) {
-            map.put(f.name(), f);
-        }
-        return map;
-    }
-
-    private String defaultToString(Object def) {
-        return def == null ? null : def.toString();
     }
 }

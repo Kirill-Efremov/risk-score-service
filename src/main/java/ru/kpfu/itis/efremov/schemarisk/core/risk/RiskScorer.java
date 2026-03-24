@@ -22,20 +22,8 @@ public class RiskScorer {
         }
 
         for (FieldChange ch : changes) {
-            switch (ch.getType()) {
-                case REMOVED -> score += 30;
-                case TYPE_CHANGED -> score += 30;
-                case ADDED -> {
-                    if (ch.getNewDefault() == null) {
-                        score += 20;
-                    } else {
-                        score += 5;
-                    }
-                }
-                case DEFAULT_ADDED -> score += 5;
-                case DEFAULT_REMOVED -> score += 15;
-                case OTHER -> score += 5;
-            }
+            score += scoreBySeverity(ch.getSeverity());
+            score += scoreByChangeType(ch);
         }
 
         if (score < 0) score = 0;
@@ -60,5 +48,26 @@ public class RiskScorer {
                 .riskLevel(level)
                 .decision(decision)
                 .build();
+    }
+
+    private int scoreBySeverity(IssueSeverity severity) {
+        if (severity == null) {
+            return 0;
+        }
+
+        return switch (severity) {
+            case ERROR -> 20;
+            case WARNING -> 10;
+            case INFO -> 3;
+        };
+    }
+
+    private int scoreByChangeType(FieldChange change) {
+        return switch (change.getChangeType()) {
+            case REMOVED, TYPE_CHANGED, REQUIRED_ADDED, OPTIONAL_BECAME_REQUIRED -> 20;
+            case REQUIRED_BECAME_OPTIONAL, NULLABILITY_CHANGED, DEFAULT_REMOVED, DEFAULT_CHANGED, NESTED_CHANGED -> 10;
+            case OPTIONAL_ADDED, DEFAULT_ADDED, ADDED -> 5;
+            case OTHER -> 3;
+        };
     }
 }

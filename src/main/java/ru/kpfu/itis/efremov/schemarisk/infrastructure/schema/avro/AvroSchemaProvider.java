@@ -3,10 +3,16 @@ package ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.avro;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.springframework.stereotype.Component;
+import ru.kpfu.itis.efremov.schemarisk.core.model.NormalizedField;
+import ru.kpfu.itis.efremov.schemarisk.core.model.NormalizedSchema;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.ParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.SchemaProvider;
 import ru.kpfu.itis.efremov.schemarisk.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.support.exception.InvalidSchemaException;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class AvroSchemaProvider implements SchemaProvider {
@@ -29,5 +35,67 @@ public class AvroSchemaProvider implements SchemaProvider {
         } catch (SchemaParseException e) {
             throw new InvalidSchemaException("Invalid Avro schema: " + e.getMessage(), e);
         }
+    }
+
+    public NormalizedSchema normalize(AvroParsedSchema parsedSchema) {
+        return normalizeSchema(parsedSchema.getAvroSchema());
+    }
+
+    private NormalizedSchema normalizeSchema(Schema schema) {
+        if (schema.getType() != Schema.Type.RECORD) {
+            throw new InvalidSchemaException("Normalization supports only Avro record schemas");
+        }
+
+        Map<String, NormalizedField> fields = new LinkedHashMap<>();
+        for (Schema.Field field : schema.getFields()) {
+            NormalizedField normalizedField = normalizeField(field);
+            fields.put(normalizedField.getName(), normalizedField);
+        }
+
+        return new NormalizedSchema(schema.getFullName(), fields);
+    }
+
+    private NormalizedField normalizeField(Schema.Field field) {
+        SchemaInfo schemaInfo = unwrap(field.schema());
+        return NormalizedField.of(
+                field.name(),
+                schemaInfo.typeName(),
+                schemaInfo.nullable(),
+                field.hasDefaultValue(),
+                defaultToString(field.defaultVal()),
+                schemaInfo.nestedSchema()
+        );
+    }
+
+    private SchemaInfo unwrap(Schema schema) {
+        if (schema.getType() != Schema.Type.UNION) {
+            return new SchemaInfo(schema.getType().getName(), false, nestedSchemaOf(schema));
+        }
+
+        List<Schema> nonNullTypes = schema.getTypes().stream()
+                .filter(candidate -> candidate.getType() != Schema.Type.NULL)
+                .toList();
+        boolean nullable = nonNullTypes.size() != schema.getTypes().size();
+
+        if (nonNullTypes.size() == 1) {
+            Schema actualSchema = nonNullTypes.get(0);
+            return new SchemaInfo(actualSchema.getType().getName(), nullable, nestedSchemaOf(actualSchema));
+        }
+
+        return new SchemaInfo(schema.toString(), nullable, null);
+    }
+
+    private NormalizedSchema nestedSchemaOf(Schema schema) {
+        if (schema.getType() != Schema.Type.RECORD) {
+            return null;
+        }
+        return normalizeSchema(schema);
+    }
+
+    private String defaultToString(Object defaultValue) {
+        return defaultValue == null ? null : defaultValue.toString();
+    }
+
+    private record SchemaInfo(String typeName, boolean nullable, NormalizedSchema nestedSchema) {
     }
 }
