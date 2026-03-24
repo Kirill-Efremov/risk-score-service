@@ -1,11 +1,11 @@
 package ru.kpfu.itis.efremov.schemarisk.application.usecase;
 
 import org.springframework.stereotype.Service;
+import ru.kpfu.itis.efremov.schemarisk.application.recommendation.service.RecommendationService;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.AvroDiffService;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityEngine;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
-import ru.kpfu.itis.efremov.schemarisk.core.recommend.RecommendationService;
 import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskResult;
 import ru.kpfu.itis.efremov.schemarisk.core.risk.RiskScorer;
 import ru.kpfu.itis.efremov.schemarisk.infrastructure.schema.ParsedSchema;
@@ -64,7 +64,9 @@ public class SchemaAnalysisExecutor {
                 diffResult,
                 riskResult,
                 recommendations,
-                null
+                null,
+                null,
+                List.of()
         );
     }
 

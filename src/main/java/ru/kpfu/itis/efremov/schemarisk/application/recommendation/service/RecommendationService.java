@@ -1,6 +1,7 @@
-package ru.kpfu.itis.efremov.schemarisk.core.recommend;
+package ru.kpfu.itis.efremov.schemarisk.application.recommendation.service;
 
 import org.springframework.stereotype.Service;
+import ru.kpfu.itis.efremov.schemarisk.application.recommendation.model.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.FieldChange;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
@@ -10,6 +11,7 @@ import ru.kpfu.itis.efremov.schemarisk.model.IssueSeverity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class RecommendationService {
@@ -48,6 +50,69 @@ public class RecommendationService {
         }
 
         return recommendations;
+    }
+
+    public GovernanceDecision decide(
+            boolean compatible,
+            boolean breaking,
+            int affectedConsumersCount,
+            int affectedProducersCount,
+            boolean hasCriticalServices,
+            String oldSchemaName,
+            String newSchemaName
+    ) {
+        if (!Objects.equals(oldSchemaName, newSchemaName)) {
+            return GovernanceDecision.SUGGEST_NEW_SUBJECT;
+        }
+
+        if (breaking && hasCriticalServices) {
+            return GovernanceDecision.REJECT;
+        }
+
+        if (breaking && affectedConsumersCount > 0) {
+            return GovernanceDecision.REQUIRE_CONSUMER_UPGRADE_FIRST;
+        }
+
+        if (breaking) {
+            return GovernanceDecision.REJECT;
+        }
+
+        if (compatible && affectedConsumersCount > 0) {
+            return GovernanceDecision.ALLOW_WITH_CAUTION;
+        }
+
+        if (compatible) {
+            return GovernanceDecision.ALLOW;
+        }
+
+        return GovernanceDecision.REJECT;
+    }
+
+    public List<String> buildExplanation(
+            GovernanceDecision decision,
+            boolean breaking,
+            int affectedConsumersCount,
+            boolean hasCriticalServices
+    ) {
+        List<String> explanation = new ArrayList<>();
+
+        if (decision == GovernanceDecision.SUGGEST_NEW_SUBJECT) {
+            explanation.add("Schema name changed");
+        }
+        if (breaking) {
+            explanation.add("Breaking change detected");
+        }
+        if (affectedConsumersCount > 0) {
+            explanation.add(affectedConsumersCount + " active consumers found");
+        }
+        if (hasCriticalServices) {
+            explanation.add("Critical services impacted");
+        }
+        if (explanation.isEmpty()) {
+            explanation.add("No governance blockers detected");
+        }
+
+        return explanation;
     }
 
     private List<String> recommendationsForChange(FieldChange change) {

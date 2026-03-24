@@ -3,6 +3,7 @@ package ru.kpfu.itis.efremov.schemarisk.api.dto;
 import lombok.Builder;
 import lombok.Data;
 import ru.kpfu.itis.efremov.schemarisk.application.impact.model.ImpactResult;
+import ru.kpfu.itis.efremov.schemarisk.application.recommendation.model.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.application.usecase.AnalyzeSchemaChangeResult;
 import ru.kpfu.itis.efremov.schemarisk.core.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.core.engine.CompatibilityResult;
@@ -24,6 +25,7 @@ public class SchemaCheckResponse {
     private int riskScore;
     private String riskLevel;
     private String decision;
+    private List<String> decisionExplanation;
     private List<String> recommendations;
     private ImpactResponse impact;
 
@@ -31,6 +33,8 @@ public class SchemaCheckResponse {
             CompatibilityResult result,
             DiffResult diffResult,
             RiskResult riskResult,
+            GovernanceDecision governanceDecision,
+            List<String> decisionExplanation,
             List<String> recommendations,
             ImpactResult impactResult
     ) {
@@ -41,7 +45,8 @@ public class SchemaCheckResponse {
                 .diff(diffResult)
                 .riskScore(riskResult.getRiskScore())
                 .riskLevel(riskResult.getRiskLevel().name())
-                .decision(riskResult.getDecision().name())
+                .decision(governanceDecision != null ? governanceDecision.name() : riskResult.getDecision().name())
+                .decisionExplanation(Objects.requireNonNullElse(decisionExplanation, List.of()))
                 .recommendations(Objects.requireNonNullElse(recommendations, List.of()))
                 .impact(ImpactResponse.fromResult(impactResult))
                 .build();
@@ -52,6 +57,8 @@ public class SchemaCheckResponse {
                 result.compatibilityResult(),
                 result.diffResult(),
                 result.riskResult(),
+                result.governanceDecision(),
+                result.decisionExplanation(),
                 result.recommendations(),
                 result.impact()
         );
