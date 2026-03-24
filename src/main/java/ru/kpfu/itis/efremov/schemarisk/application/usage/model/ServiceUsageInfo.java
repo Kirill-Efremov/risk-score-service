@@ -10,7 +10,10 @@ public record ServiceUsageInfo(
         String subject,
         Integer version,
         ServiceRole role,
+        UsageStatus status,
         boolean active,
-        Instant createdAt
+        Instant createdAt,
+        Instant activeFrom,
+        Instant activeTo
 ) {
 }

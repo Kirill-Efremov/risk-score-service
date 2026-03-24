@@ -12,8 +12,11 @@ public record ServiceUsageResponse(
         String subject,
         Integer version,
         String role,
+        String status,
         boolean active,
-        Instant createdAt
+        Instant createdAt,
+        Instant activeFrom,
+        Instant activeTo
 ) {
     public static ServiceUsageResponse fromInfo(ServiceUsageInfo info) {
         return new ServiceUsageResponse(
@@ -24,8 +27,11 @@ public record ServiceUsageResponse(
                 info.subject(),
                 info.version(),
                 info.role().name(),
+                info.status().name(),
                 info.active(),
-                info.createdAt()
+                info.createdAt(),
+                info.activeFrom(),
+                info.activeTo()
         );
     }
 }

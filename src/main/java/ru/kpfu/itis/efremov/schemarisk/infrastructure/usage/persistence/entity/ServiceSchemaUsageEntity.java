@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import ru.kpfu.itis.efremov.schemarisk.application.usage.model.ServiceRole;
+import ru.kpfu.itis.efremov.schemarisk.application.usage.model.UsageStatus;
 
 import java.time.Instant;
 
@@ -41,9 +42,19 @@ public class ServiceSchemaUsageEntity {
     @Column(name = "role", nullable = false)
     private ServiceRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private UsageStatus status;
+
     @Column(name = "active", nullable = false)
     private boolean active;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @Column(name = "active_from", nullable = false)
+    private Instant activeFrom;
+
+    @Column(name = "active_to")
+    private Instant activeTo;
 }

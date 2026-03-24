@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import ru.kpfu.itis.efremov.schemarisk.api.dto.RegisterServiceRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.RegisterServiceUsageRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.ServiceResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.ServiceUsageResponse;
+import ru.kpfu.itis.efremov.schemarisk.api.dto.UpdateServiceUsageStatusRequest;
 import ru.kpfu.itis.efremov.schemarisk.application.usage.model.RegisterServiceCommand;
 import ru.kpfu.itis.efremov.schemarisk.application.usage.model.RegisterServiceUsageCommand;
 import ru.kpfu.itis.efremov.schemarisk.application.usage.service.ServiceUsageService;
@@ -72,6 +74,18 @@ public class ServiceUsageController {
                 serviceUsageService.getUsageBySubject(subject).stream()
                         .map(ServiceUsageResponse::fromInfo)
                         .toList()
+        );
+    }
+
+    @PatchMapping("/services/usages/{usageId}/status")
+    public ResponseEntity<ServiceUsageResponse> updateUsageStatus(
+            @PathVariable @Positive(message = "usageId must be positive") Long usageId,
+            @Valid @RequestBody UpdateServiceUsageStatusRequest request
+    ) {
+        return ResponseEntity.ok(
+                ServiceUsageResponse.fromInfo(
+                        serviceUsageService.updateUsageStatus(usageId, request.getStatus())
+                )
         );
     }
 }

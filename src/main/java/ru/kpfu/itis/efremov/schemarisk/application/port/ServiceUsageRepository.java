@@ -4,6 +4,7 @@ import ru.kpfu.itis.efremov.schemarisk.application.usage.model.RegisterServiceCo
 import ru.kpfu.itis.efremov.schemarisk.application.usage.model.RegisterServiceUsageCommand;
 import ru.kpfu.itis.efremov.schemarisk.application.usage.model.ServiceInfo;
 import ru.kpfu.itis.efremov.schemarisk.application.usage.model.ServiceUsageInfo;
+import ru.kpfu.itis.efremov.schemarisk.application.usage.model.UpdateServiceUsageStatusCommand;
 
 import java.util.List;
 
@@ -12,6 +13,10 @@ public interface ServiceUsageRepository {
     ServiceInfo registerService(RegisterServiceCommand command);
 
     ServiceUsageInfo registerUsage(RegisterServiceUsageCommand command);
+
+    ServiceUsageInfo getUsageById(Long usageId);
+
+    ServiceUsageInfo updateUsageStatus(UpdateServiceUsageStatusCommand command);
 
     List<ServiceUsageInfo> getUsageBySubject(String subject);
 

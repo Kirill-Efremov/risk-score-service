@@ -27,8 +27,11 @@ public class ServiceUsageMapper {
                 entity.getSubject(),
                 entity.getVersion(),
                 entity.getRole(),
+                entity.getStatus(),
                 entity.isActive(),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getActiveFrom(),
+                entity.getActiveTo()
         );
     }
 }
