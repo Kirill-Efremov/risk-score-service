@@ -3,10 +3,10 @@ package ru.kpfu.itis.efremov.schemarisk.analysis.service;
 import org.springframework.stereotype.Service;
 import ru.kpfu.itis.efremov.schemarisk.analysis.graph.UsageGraphService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.graph.dto.UsageGraphResponse;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeCommand;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeVersionedSchemaChangeCommand;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.ResolvedVersionedSchemaChange;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisInput;
 import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactAnalysisService;
 import ru.kpfu.itis.efremov.schemarisk.history.model.SaveAnalysisCommand;
@@ -52,10 +52,10 @@ public class AnalyzeVersionedSchemaChangeService {
         this.schemaProviderRegistry = schemaProviderRegistry;
     }
 
-    public AnalyzeSchemaChangeResult analyze(AnalyzeVersionedSchemaChangeCommand command) {
+    public SchemaAnalysisResult analyze(AnalyzeVersionedSchemaChangeCommand command) {
         ResolvedVersionedSchemaChange resolvedChange = versionedSchemaChangeResolver.resolve(command);
-        AnalyzeSchemaChangeResult baseResult = schemaAnalysisExecutor.execute(
-                new AnalyzeSchemaChangeCommand(
+        SchemaAnalysisResult baseResult = schemaAnalysisExecutor.execute(
+                new SchemaAnalysisInput(
                         resolvedChange.schemaType(),
                         command.compatibilityMode(),
                         resolvedChange.oldSchema(),
@@ -90,7 +90,7 @@ public class AnalyzeVersionedSchemaChangeService {
                 impact.affectedConsumersCount(),
                 !impact.criticalServices().isEmpty()
         );
-        AnalyzeSchemaChangeResult result = new AnalyzeSchemaChangeResult(
+        SchemaAnalysisResult result = new SchemaAnalysisResult(
                 baseResult.compatibilityResult(),
                 baseResult.diffResult(),
                 adjustedRisk,
@@ -162,6 +162,7 @@ public class AnalyzeVersionedSchemaChangeService {
                 .build();
     }
 }
+
 
 
 

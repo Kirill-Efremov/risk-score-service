@@ -8,7 +8,7 @@ import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.analysis.graph.dto.UsageGraphResponse;
 import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
 import ru.kpfu.itis.efremov.schemarisk.common.model.Issue;
 
@@ -17,8 +17,8 @@ import java.util.Objects;
 
 @Data
 @Builder
-@Schema(description = "Результат анализа схемы")
-public class SchemaCheckResponse {
+@Schema(description = "Результат анализа эволюции схемы в контексте subject и версии")
+public class SchemaAnalysisResponse {
 
     @Schema(description = "Флаг совместимости", example = "true")
     private boolean compatible;
@@ -39,7 +39,7 @@ public class SchemaCheckResponse {
     @Schema(description = "Граф влияния изменения схемы на сервисы")
     private UsageGraphResponse impactGraph;
 
-    public static SchemaCheckResponse fromResult(
+    public static SchemaAnalysisResponse fromResult(
             CompatibilityResult result,
             DiffResult diffResult,
             RiskResult riskResult,
@@ -49,7 +49,7 @@ public class SchemaCheckResponse {
             ImpactResult impactResult,
             UsageGraphResponse impactGraph
     ) {
-        return SchemaCheckResponse.builder()
+        return SchemaAnalysisResponse.builder()
                 .compatible(result.isCompatible())
                 .mode(result.getMode().name())
                 .issues(Objects.requireNonNullElse(result.getIssues(), List.of()))
@@ -64,7 +64,7 @@ public class SchemaCheckResponse {
                 .build();
     }
 
-    public static SchemaCheckResponse fromResult(AnalyzeSchemaChangeResult result) {
+    public static SchemaAnalysisResponse fromResult(SchemaAnalysisResult result) {
         return fromResult(
                 result.compatibilityResult(),
                 result.diffResult(),
@@ -77,3 +77,4 @@ public class SchemaCheckResponse {
         );
     }
 }
+

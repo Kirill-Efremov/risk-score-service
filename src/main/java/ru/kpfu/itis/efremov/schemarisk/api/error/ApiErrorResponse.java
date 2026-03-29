@@ -17,12 +17,13 @@ public record ApiErrorResponse(
         String errorCode,
         @Schema(description = "Сообщение об ошибке", example = "Request validation failed")
         String message,
-        @Schema(description = "Путь запроса", example = "/api/v1/checks")
+        @Schema(description = "Путь запроса", example = "/api/v1/subjects/user-created/checks")
         String path,
         @Schema(description = "Детали ошибок валидации")
         List<ApiFieldError> details
 ) {
 }
+
 
 
 

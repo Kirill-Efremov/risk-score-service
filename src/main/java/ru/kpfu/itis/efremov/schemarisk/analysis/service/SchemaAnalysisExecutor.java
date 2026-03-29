@@ -1,8 +1,8 @@
 package ru.kpfu.itis.efremov.schemarisk.analysis.service;
 
 import org.springframework.stereotype.Service;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeCommand;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisInput;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.RecommendationService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.diff.AvroDiffService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
@@ -42,14 +42,14 @@ public class SchemaAnalysisExecutor {
         this.recommendationService = recommendationService;
     }
 
-    public AnalyzeSchemaChangeResult execute(AnalyzeSchemaChangeCommand command) {
-        SchemaProvider provider = providerRegistry.getProvider(command.schemaType());
+    public SchemaAnalysisResult execute(SchemaAnalysisInput input) {
+        SchemaProvider provider = providerRegistry.getProvider(input.schemaType());
 
-        ParsedSchema oldSchema = provider.parseSchema(command.oldSchema());
-        ParsedSchema newSchema = provider.parseSchema(command.newSchema());
+        ParsedSchema oldSchema = provider.parseSchema(input.previousSchema());
+        ParsedSchema newSchema = provider.parseSchema(input.candidateSchema());
 
-        CompatibilityMode compatibilityMode = resolveCompatibilityMode(command.compatibilityMode());
-        DiffResult diffResult = buildDiffIfSupported(command.schemaType(), oldSchema, newSchema);
+        CompatibilityMode compatibilityMode = resolveCompatibilityMode(input.compatibilityMode());
+        DiffResult diffResult = buildDiffIfSupported(input.schemaType(), oldSchema, newSchema);
         CompatibilityResult compatibilityResult = compatibilityEngine.check(oldSchema, newSchema, compatibilityMode);
         RiskResult riskResult = riskScorer.score(
                 compatibilityResult,
@@ -61,7 +61,7 @@ public class SchemaAnalysisExecutor {
                 riskResult
         );
 
-        return new AnalyzeSchemaChangeResult(
+        return new SchemaAnalysisResult(
                 compatibilityResult,
                 diffResult,
                 riskResult,
@@ -92,6 +92,7 @@ public class SchemaAnalysisExecutor {
         );
     }
 }
+
 
 
 

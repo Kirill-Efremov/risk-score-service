@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.AnalysisRecordResponse;
-import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaCheckResponse;
+import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaAnalysisResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.VersionedSchemaCheckRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.error.ApiErrorResponse;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeSchemaChangeResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeVersionedSchemaChangeCommand;
 import ru.kpfu.itis.efremov.schemarisk.analysis.service.AnalyzeVersionedSchemaChangeService;
 import ru.kpfu.itis.efremov.schemarisk.history.service.ListSubjectAnalysesService;
@@ -56,7 +56,7 @@ public class SubjectSchemaCheckController {
                     responseCode = "200",
                     description = "Результат анализа",
                     content = @Content(
-                            schema = @Schema(implementation = SchemaCheckResponse.class),
+                            schema = @Schema(implementation = SchemaAnalysisResponse.class),
                             examples = @ExampleObject(
                                     name = "versioned-analysis-with-impact-graph",
                                     value = """
@@ -122,12 +122,12 @@ public class SubjectSchemaCheckController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
-    public ResponseEntity<SchemaCheckResponse> check(
+    public ResponseEntity<SchemaAnalysisResponse> check(
             @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,
             @Valid @RequestBody VersionedSchemaCheckRequest request
     ) {
-        AnalyzeSchemaChangeResult result = analyzeVersionedSchemaChangeService.analyze(
+        SchemaAnalysisResult result = analyzeVersionedSchemaChangeService.analyze(
                 new AnalyzeVersionedSchemaChangeCommand(
                         subject,
                         request.getOldVersion(),
@@ -138,7 +138,7 @@ public class SubjectSchemaCheckController {
                 )
         );
 
-        return ResponseEntity.ok(SchemaCheckResponse.fromResult(result));
+        return ResponseEntity.ok(SchemaAnalysisResponse.fromResult(result));
     }
 
     @GetMapping("/{subject}/checks")
@@ -167,3 +167,4 @@ public class SubjectSchemaCheckController {
         );
     }
 }
+
