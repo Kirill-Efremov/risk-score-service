@@ -63,13 +63,13 @@ public class AnalyzeVersionedSchemaChangeService {
                 )
         );
         ImpactResult impact = impactAnalysisService.analyze(
-                resolvedChange.oldSchemaVersion().subject().name(),
+                resolvedChange.subject(),
                 resolvedChange.oldSchemaVersion().version(),
                 resolvedChange.newSchemaVersion().version(),
                 baseResult.compatibilityResult()
         );
         UsageGraphResponse impactGraph = usageGraphService.buildGraph(
-                resolvedChange.oldSchemaVersion().subject().name(),
+                resolvedChange.subject(),
                 impact
         );
         RiskResult adjustedRisk = applyImpactToRisk(baseResult.riskResult(), impact);
@@ -103,12 +103,14 @@ public class AnalyzeVersionedSchemaChangeService {
 
         analysisRepository.save(
                 new SaveAnalysisCommand(
-                        resolvedChange.oldSchemaVersion().subject().id(),
-                        resolvedChange.oldSchemaVersion().subject().name(),
-                        resolvedChange.oldSchemaVersion().id(),
+                        resolvedChange.oldSchemaVersion().subject().localId(),
+                        resolvedChange.subject(),
+                        resolvedChange.oldSchemaVersion().localId(),
                         resolvedChange.oldSchemaVersion().version(),
-                        resolvedChange.newSchemaVersion().id(),
+                        resolvedChange.newSchemaVersion().localId(),
                         resolvedChange.newSchemaVersion().version(),
+                        resolvedChange.newSchemaVersion().sourceType(),
+                        resolvedChange.newSchemaVersion().externalSchemaId(),
                         result.compatibilityResult(),
                         result.diffResult(),
                         result.riskResult(),
@@ -162,8 +164,4 @@ public class AnalyzeVersionedSchemaChangeService {
                 .build();
     }
 }
-
-
-
-
 

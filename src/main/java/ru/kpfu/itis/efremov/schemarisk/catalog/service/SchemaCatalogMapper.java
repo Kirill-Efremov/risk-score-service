@@ -1,6 +1,7 @@
 package ru.kpfu.itis.efremov.schemarisk.catalog.service;
 
 import org.springframework.stereotype.Component;
+import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSubjectInfo;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaVersionInfo;
 import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaSubjectEntity;
@@ -11,30 +12,29 @@ public class SchemaCatalogMapper {
 
     public SchemaSubjectInfo toSubjectInfo(SchemaSubjectEntity entity) {
         return new SchemaSubjectInfo(
-                entity.getId(),
                 entity.getName(),
                 entity.getSchemaType(),
                 entity.getDefaultCompatibilityMode(),
                 entity.getDescription(),
+                SchemaSourceType.LOCAL,
+                entity.getId(),
+                null,
                 entity.getCreatedAt()
         );
     }
 
     public SchemaVersionInfo toVersionInfo(SchemaVersionEntity entity) {
         return new SchemaVersionInfo(
-                entity.getId(),
                 toSubjectInfo(entity.getSubject()),
                 entity.getVersion(),
                 entity.getSchemaText(),
                 entity.getSchemaHash(),
+                entity.getSubject().getSchemaType(),
                 entity.getStatus(),
                 entity.getSourceType(),
+                entity.getId(),
                 entity.getExternalSchemaId(),
                 entity.getCreatedAt()
         );
     }
 }
-
-
-
-

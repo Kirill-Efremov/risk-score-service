@@ -4,6 +4,7 @@ import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaVersionInfo;
 import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 public record ResolvedVersionedSchemaChange(
+        String subject,
         SchemaType schemaType,
         String oldSchema,
         String newSchema,

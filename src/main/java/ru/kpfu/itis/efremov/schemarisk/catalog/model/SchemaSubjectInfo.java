@@ -6,15 +6,13 @@ import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 import java.time.Instant;
 
 public record SchemaSubjectInfo(
-        Long id,
         String name,
         SchemaType schemaType,
         CompatibilityMode defaultCompatibilityMode,
         String description,
+        SchemaSourceType sourceType,
+        Long localId,
+        String externalId,
         Instant createdAt
 ) {
 }
-
-
-
-

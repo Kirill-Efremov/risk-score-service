@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.kpfu.itis.efremov.schemarisk.api.error.ApiErrorResponse;
-import ru.kpfu.itis.efremov.schemarisk.api.error.ApiFieldError;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidRequestException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidSchemaException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;

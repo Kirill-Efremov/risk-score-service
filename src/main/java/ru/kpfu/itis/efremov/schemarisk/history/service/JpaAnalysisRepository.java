@@ -46,6 +46,11 @@ public class JpaAnalysisRepository implements AnalysisRepository {
         entity.setSubject(resolveSubject(command.subjectId()));
         entity.setOldVersion(resolveVersion(command.oldVersionId()));
         entity.setNewVersion(resolveVersion(command.newVersionId()));
+        entity.setSubjectName(command.subjectName());
+        entity.setOldVersionNumber(command.oldVersion());
+        entity.setNewVersionNumber(command.newVersion());
+        entity.setSourceType(command.sourceType());
+        entity.setExternalSchemaId(command.externalSchemaId());
         entity.setCompatibilityMode(command.compatibilityResult().getMode());
         entity.setFormalCompatible(command.compatibilityResult().isCompatible());
         entity.setIssuesJson(analysisJsonMapper.writeIssues(command.compatibilityResult().getIssues()));
@@ -72,12 +77,13 @@ public class JpaAnalysisRepository implements AnalysisRepository {
     @Override
     @Transactional(readOnly = true)
     public List<AnalysisRecord> listBySubject(String subject) {
-        if (schemaSubjectRepository.findByName(subject).isEmpty()) {
-            throw new ResourceNotFoundException("Subject not found: " + subject);
-        }
-        return schemaAnalysisRepository.findAllBySubject_NameOrderByCreatedAtDesc(subject).stream()
+        List<AnalysisRecord> records = schemaAnalysisRepository.findAllBySubjectReferenceOrderByCreatedAtDesc(subject).stream()
                 .map(schemaAnalysisMapper::toRecord)
                 .toList();
+        if (records.isEmpty()) {
+            throw new ResourceNotFoundException("Subject not found: " + subject);
+        }
+        return records;
     }
 
     private SchemaSubjectEntity resolveSubject(Long subjectId) {
@@ -96,7 +102,3 @@ public class JpaAnalysisRepository implements AnalysisRepository {
                 .orElseThrow(() -> new ResourceNotFoundException("Schema version not found by id: " + versionId));
     }
 }
-
-
-
-

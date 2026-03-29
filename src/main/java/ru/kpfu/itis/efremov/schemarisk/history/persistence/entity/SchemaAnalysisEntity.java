@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskLevel;
+import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaSubjectEntity;
 import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaVersionEntity;
 import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
@@ -42,6 +43,22 @@ public class SchemaAnalysisEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "new_version_id")
     private SchemaVersionEntity newVersion;
+
+    @Column(name = "subject_name")
+    private String subjectName;
+
+    @Column(name = "old_version")
+    private Integer oldVersionNumber;
+
+    @Column(name = "new_version")
+    private Integer newVersionNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source_type")
+    private SchemaSourceType sourceType;
+
+    @Column(name = "external_schema_id")
+    private String externalSchemaId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "compatibility_mode", nullable = false)
@@ -79,7 +96,3 @@ public class SchemaAnalysisEntity {
     @Column(name = "created_by")
     private String createdBy;
 }
-
-
-
-

@@ -17,11 +17,13 @@ public class SchemaAnalysisMapper {
         return new AnalysisRecord(
                 entity.getId(),
                 entity.getSubject() != null ? entity.getSubject().getId() : null,
-                entity.getSubject() != null ? entity.getSubject().getName() : null,
+                entity.getSubjectName() != null ? entity.getSubjectName() : entity.getSubject() != null ? entity.getSubject().getName() : null,
                 entity.getOldVersion() != null ? entity.getOldVersion().getId() : null,
-                entity.getOldVersion() != null ? entity.getOldVersion().getVersion() : null,
+                entity.getOldVersionNumber() != null ? entity.getOldVersionNumber() : entity.getOldVersion() != null ? entity.getOldVersion().getVersion() : null,
                 entity.getNewVersion() != null ? entity.getNewVersion().getId() : null,
-                entity.getNewVersion() != null ? entity.getNewVersion().getVersion() : null,
+                entity.getNewVersionNumber() != null ? entity.getNewVersionNumber() : entity.getNewVersion() != null ? entity.getNewVersion().getVersion() : null,
+                entity.getSourceType(),
+                entity.getExternalSchemaId(),
                 entity.getCompatibilityMode(),
                 entity.isFormalCompatible(),
                 analysisJsonMapper.readIssues(entity.getIssuesJson()),
@@ -36,7 +38,3 @@ public class SchemaAnalysisMapper {
         );
     }
 }
-
-
-
-

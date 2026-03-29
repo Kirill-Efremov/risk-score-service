@@ -1,5 +1,6 @@
 package ru.kpfu.itis.efremov.schemarisk.catalog.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.RegisterSchemaVersionCommand;
@@ -23,6 +24,7 @@ import java.util.HexFormat;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "local", matchIfMissing = true)
 public class LocalSchemaCatalog implements SchemaCatalog {
 
     private final SchemaSubjectRepository schemaSubjectRepository;
@@ -141,7 +143,3 @@ public class LocalSchemaCatalog implements SchemaCatalog {
         }
     }
 }
-
-
-
-

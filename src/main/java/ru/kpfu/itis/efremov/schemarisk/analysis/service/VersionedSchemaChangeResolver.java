@@ -26,6 +26,7 @@ public class VersionedSchemaChangeResolver {
         SchemaType schemaType = resolveSchemaType(command, oldSchemaVersion, newSchemaVersion);
 
         return new ResolvedVersionedSchemaChange(
+                command.subject(),
                 schemaType,
                 oldSchemaVersion.schemaText(),
                 newSchemaVersion.schemaText(),
@@ -72,8 +73,8 @@ public class VersionedSchemaChangeResolver {
             SchemaVersionInfo oldSchemaVersion,
             SchemaVersionInfo newSchemaVersion
     ) {
-        SchemaType subjectType = oldSchemaVersion.subject().schemaType();
-        if (newSchemaVersion != null && newSchemaVersion.subject().schemaType() != subjectType) {
+        SchemaType subjectType = oldSchemaVersion.schemaType();
+        if (newSchemaVersion != null && newSchemaVersion.schemaType() != subjectType) {
             throw new InvalidRequestException("Schema type mismatch between old and new versions");
         }
 
@@ -84,7 +85,4 @@ public class VersionedSchemaChangeResolver {
         return subjectType;
     }
 }
-
-
-
 
