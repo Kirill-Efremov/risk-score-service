@@ -1,0 +1,13 @@
+.git
+.gradle
+.gradle-home*
+build
+out
+target
+logs
+tmp
+*.iml
+.idea
+.vscode
+.env
+src/main/resources/application-local.properties

@@ -1,0 +1,39 @@
+package ru.kpfu.itis.efremov.schemarisk.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
+
+@Configuration
+public class WebCorsConfiguration implements WebMvcConfigurer {
+
+    private final String[] allowedOrigins;
+
+    public WebCorsConfiguration(
+            @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}") String allowedOrigins
+    ) {
+        this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .toArray(String[]::new);
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins(allowedOrigins)
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+        registry.addMapping("/v3/api-docs/**")
+                .allowedOrigins(allowedOrigins)
+                .allowedMethods("GET", "OPTIONS")
+                .allowedHeaders("*");
+        registry.addMapping("/swagger-ui/**")
+                .allowedOrigins(allowedOrigins)
+                .allowedMethods("GET", "OPTIONS")
+                .allowedHeaders("*");
+    }
+}

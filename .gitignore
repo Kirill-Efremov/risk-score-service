@@ -1,49 +1,20 @@
-.gradle
-.gradle-home*
-.idea
+.gradle/
+.gradle-home*/
+backend/.gradle/
+backend/build/
 build/
-target/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+.env
+.idea/
+.vscode/
 *.iml
 *.ipr
+*.iws
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+target/
+logs/
+tmp/
 .DS_Store
-
-### Local config ###
-src/main/resources/application-local.properties
-.env
+backend/src/main/resources/application-local.properties

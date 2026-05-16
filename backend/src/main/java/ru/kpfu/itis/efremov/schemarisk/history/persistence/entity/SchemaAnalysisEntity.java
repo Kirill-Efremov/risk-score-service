@@ -1,0 +1,138 @@
+package ru.kpfu.itis.efremov.schemarisk.history.persistence.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.SchemaPromotionStatus;
+import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskLevel;
+import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
+import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaSubjectEntity;
+import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaVersionEntity;
+import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
+import ru.kpfu.itis.efremov.schemarisk.common.model.Decision;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "schema_analysis")
+public class SchemaAnalysisEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id")
+    private SchemaSubjectEntity subject;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "old_version_id")
+    private SchemaVersionEntity oldVersion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "new_version_id")
+    private SchemaVersionEntity newVersion;
+
+    @Column(name = "subject_name")
+    private String subjectName;
+
+    @Column(name = "old_version")
+    private Integer oldVersionNumber;
+
+    @Column(name = "new_version")
+    private Integer newVersionNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source_type")
+    private SchemaSourceType sourceType;
+
+    @Column(name = "external_schema_id")
+    private String externalSchemaId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "compatibility_mode", nullable = false)
+    private CompatibilityMode compatibilityMode;
+
+    @Column(name = "formal_compatible", nullable = false)
+    private boolean formalCompatible;
+
+    @Column(name = "issues_json", nullable = false, columnDefinition = "text")
+    private String issuesJson;
+
+    @Column(name = "diff_json", columnDefinition = "text")
+    private String diffJson;
+
+    @Column(name = "risk_score", nullable = false)
+    private int riskScore;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "risk_level", nullable = false)
+    private RiskLevel riskLevel;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "decision", nullable = false)
+    private Decision decision;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "governance_decision")
+    private GovernanceDecision governanceDecision;
+
+    @Column(name = "decision_explanation_json", columnDefinition = "text")
+    private String decisionExplanationJson;
+
+    @Column(name = "risk_factors_json", columnDefinition = "text")
+    private String riskFactorsJson;
+
+    @Column(name = "recommendations_json", nullable = false, columnDefinition = "text")
+    private String recommendationsJson;
+
+    @Column(name = "structured_recommendations_json", columnDefinition = "text")
+    private String structuredRecommendationsJson;
+
+    @Column(name = "impact_json", columnDefinition = "text")
+    private String impactJson;
+
+    @Column(name = "impact_graph_json", columnDefinition = "text")
+    private String impactGraphJson;
+
+    @Column(name = "old_schema_text", columnDefinition = "text")
+    private String oldSchemaText;
+
+    @Column(name = "new_schema_text", columnDefinition = "text")
+    private String newSchemaText;
+
+    @Column(name = "promotion_attempted")
+    private Boolean promotionAttempted;
+
+    @Column(name = "registered")
+    private Boolean registered;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "registration_status")
+    private SchemaPromotionStatus registrationStatus;
+
+    @Column(name = "registered_version")
+    private Integer registeredVersion;
+
+    @Column(name = "schema_registry_id")
+    private Integer schemaRegistryId;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "created_by")
+    private String createdBy;
+}
