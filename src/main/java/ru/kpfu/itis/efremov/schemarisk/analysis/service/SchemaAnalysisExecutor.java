@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisInput;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.RecommendationService;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.StructuredRecommendation;
 import ru.kpfu.itis.efremov.schemarisk.analysis.diff.AvroDiffService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityEngine;
@@ -60,12 +61,20 @@ public class SchemaAnalysisExecutor {
                 diffResult,
                 riskResult
         );
+        List<StructuredRecommendation> structuredRecommendations = recommendationService.generateStructuredRecommendations(
+                compatibilityResult,
+                diffResult,
+                riskResult,
+                null,
+                null
+        );
 
         return new SchemaAnalysisResult(
                 compatibilityResult,
                 diffResult,
                 riskResult,
                 recommendations,
+                structuredRecommendations,
                 null,
                 null,
                 null,

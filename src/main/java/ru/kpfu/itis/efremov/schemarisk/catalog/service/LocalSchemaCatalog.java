@@ -24,7 +24,9 @@ import java.util.HexFormat;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "local", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "local")
+@Deprecated(since = "registry-first-demo", forRemoval = false)
+// Legacy local catalog. Schema Registry is the default source of truth.
 public class LocalSchemaCatalog implements SchemaCatalog {
 
     private final SchemaSubjectRepository schemaSubjectRepository;

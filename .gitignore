@@ -2,6 +2,7 @@
 .gradle-home*
 .idea
 build/
+target/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -45,3 +46,4 @@ bin/
 
 ### Local config ###
 src/main/resources/application-local.properties
+.env

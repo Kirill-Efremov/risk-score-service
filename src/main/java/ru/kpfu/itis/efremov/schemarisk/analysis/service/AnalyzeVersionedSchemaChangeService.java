@@ -12,14 +12,15 @@ import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactAnalysisService;
 import ru.kpfu.itis.efremov.schemarisk.history.model.SaveAnalysisCommand;
 import ru.kpfu.itis.efremov.schemarisk.common.port.AnalysisRepository;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecisionService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.RecommendationService;
-import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskLevel;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.StructuredRecommendation;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskScorer;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.SchemaProvider;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.SchemaProviderRegistry;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroParsedSchema;
-import ru.kpfu.itis.efremov.schemarisk.common.model.Decision;
 
 import java.util.List;
 
@@ -31,8 +32,10 @@ public class AnalyzeVersionedSchemaChangeService {
     private final AnalysisRepository analysisRepository;
     private final ImpactAnalysisService impactAnalysisService;
     private final UsageGraphService usageGraphService;
+    private final GovernanceDecisionService governanceDecisionService;
     private final RecommendationService recommendationService;
     private final SchemaProviderRegistry schemaProviderRegistry;
+    private final RiskScorer riskScorer;
 
     public AnalyzeVersionedSchemaChangeService(
             VersionedSchemaChangeResolver versionedSchemaChangeResolver,
@@ -40,16 +43,20 @@ public class AnalyzeVersionedSchemaChangeService {
             AnalysisRepository analysisRepository,
             ImpactAnalysisService impactAnalysisService,
             UsageGraphService usageGraphService,
+            GovernanceDecisionService governanceDecisionService,
             RecommendationService recommendationService,
-            SchemaProviderRegistry schemaProviderRegistry
+            SchemaProviderRegistry schemaProviderRegistry,
+            RiskScorer riskScorer
     ) {
         this.versionedSchemaChangeResolver = versionedSchemaChangeResolver;
         this.schemaAnalysisExecutor = schemaAnalysisExecutor;
         this.analysisRepository = analysisRepository;
         this.impactAnalysisService = impactAnalysisService;
         this.usageGraphService = usageGraphService;
+        this.governanceDecisionService = governanceDecisionService;
         this.recommendationService = recommendationService;
         this.schemaProviderRegistry = schemaProviderRegistry;
+        this.riskScorer = riskScorer;
     }
 
     public SchemaAnalysisResult analyze(AnalyzeVersionedSchemaChangeCommand command) {
@@ -72,29 +79,43 @@ public class AnalyzeVersionedSchemaChangeService {
                 resolvedChange.subject(),
                 impact
         );
-        RiskResult adjustedRisk = applyImpactToRisk(baseResult.riskResult(), impact);
+        RiskResult adjustedRisk = riskScorer.score(
+                baseResult.compatibilityResult(),
+                baseResult.diffResult() != null ? baseResult.diffResult().getChanges() : List.of(),
+                impact
+        );
         String oldSchemaName = extractSchemaName(resolvedChange.schemaType(), resolvedChange.oldSchema());
         String newSchemaName = extractSchemaName(resolvedChange.schemaType(), resolvedChange.newSchema());
-        GovernanceDecision governanceDecision = recommendationService.decide(
-                baseResult.compatibilityResult().isCompatible(),
-                !baseResult.compatibilityResult().isCompatible(),
-                impact.affectedConsumersCount(),
-                impact.affectedProducersCount(),
-                !impact.criticalServices().isEmpty(),
+        GovernanceDecision governanceDecision = governanceDecisionService.decide(
+                baseResult.compatibilityResult(),
+                baseResult.diffResult(),
+                adjustedRisk,
+                impact,
                 oldSchemaName,
                 newSchemaName
         );
-        List<String> decisionExplanation = recommendationService.buildExplanation(
+        List<String> decisionExplanation = governanceDecisionService.explain(
                 governanceDecision,
-                !baseResult.compatibilityResult().isCompatible(),
-                impact.affectedConsumersCount(),
-                !impact.criticalServices().isEmpty()
+                baseResult.compatibilityResult(),
+                baseResult.diffResult(),
+                adjustedRisk,
+                impact,
+                oldSchemaName,
+                newSchemaName
+        );
+        List<StructuredRecommendation> structuredRecommendations = recommendationService.generateStructuredRecommendations(
+                baseResult.compatibilityResult(),
+                baseResult.diffResult(),
+                adjustedRisk,
+                impact,
+                governanceDecision
         );
         SchemaAnalysisResult result = new SchemaAnalysisResult(
                 baseResult.compatibilityResult(),
                 baseResult.diffResult(),
                 adjustedRisk,
                 baseResult.recommendations(),
+                structuredRecommendations,
                 impact,
                 impactGraph,
                 governanceDecision,
@@ -114,9 +135,12 @@ public class AnalyzeVersionedSchemaChangeService {
                         result.compatibilityResult(),
                         result.diffResult(),
                         result.riskResult(),
+                        result.governanceDecision(),
+                        result.decisionExplanation(),
                         result.recommendations(),
+                        result.structuredRecommendations(),
                         result.impact(),
-                        null
+                        command.createdBy()
                 )
         );
 
@@ -130,38 +154,6 @@ public class AnalyzeVersionedSchemaChangeService {
             return avroParsedSchema.getAvroSchema().getFullName();
         }
         return null;
-    }
-
-    private RiskResult applyImpactToRisk(RiskResult baseRisk, ImpactResult impact) {
-        int adjustedScore = baseRisk.getRiskScore();
-
-        if (impact.breaking() && impact.affectedConsumersCount() > 0) {
-            adjustedScore += impact.affectedConsumersCount() * 5;
-        }
-        if (!impact.criticalServices().isEmpty()) {
-            adjustedScore += 20;
-        }
-
-        adjustedScore = Math.min(Math.max(adjustedScore, 0), 100);
-
-        RiskLevel level;
-        Decision decision;
-        if (adjustedScore >= 70) {
-            level = RiskLevel.HIGH;
-            decision = Decision.BLOCK;
-        } else if (adjustedScore >= 30) {
-            level = RiskLevel.MEDIUM;
-            decision = Decision.WARN;
-        } else {
-            level = RiskLevel.LOW;
-            decision = Decision.ALLOW;
-        }
-
-        return RiskResult.builder()
-                .riskScore(adjustedScore)
-                .riskLevel(level)
-                .decision(decision)
-                .build();
     }
 }
 

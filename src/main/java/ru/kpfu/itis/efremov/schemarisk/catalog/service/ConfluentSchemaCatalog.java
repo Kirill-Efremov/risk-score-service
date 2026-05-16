@@ -20,7 +20,7 @@ import java.util.HexFormat;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "confluent")
+@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "confluent", matchIfMissing = true)
 public class ConfluentSchemaCatalog implements SchemaCatalog {
 
     private final ConfluentSchemaRegistryClient client;
@@ -52,12 +52,21 @@ public class ConfluentSchemaCatalog implements SchemaCatalog {
 
     @Override
     public SchemaVersionInfo registerSchemaVersion(RegisterSchemaVersionCommand command) {
-        if (command.status() != SchemaVersionStatus.DRAFT) {
-            throw new InvalidRequestException(
-                    "Publishing to Confluent Schema Registry is not supported in read-first mode"
-            );
+        SchemaVersionStatus status = command.status() != null ? command.status() : SchemaVersionStatus.ACTIVE;
+        if (status == SchemaVersionStatus.DRAFT) {
+            return registerDraftVersion(command);
         }
 
+        SchemaType schemaType = command.schemaType() != null ? command.schemaType() : SchemaType.AVRO;
+        client.registerVersion(command.subject(), command.schemaText(), schemaType);
+        SchemaVersionInfo registeredVersion = getLatestVersion(command.subject());
+        if (registeredVersion.schemaType() != schemaType) {
+            throw new InvalidRequestException("Registered schema type does not match requested schema type");
+        }
+        return registeredVersion;
+    }
+
+    private SchemaVersionInfo registerDraftVersion(RegisterSchemaVersionCommand command) {
         SchemaVersionInfo latestVersion = getLatestVersion(command.subject());
         SchemaType schemaType = command.schemaType() != null ? command.schemaType() : latestVersion.schemaType();
         if (schemaType != latestVersion.schemaType()) {

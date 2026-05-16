@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskLevel;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaSubjectEntity;
@@ -84,8 +85,21 @@ public class SchemaAnalysisEntity {
     @Column(name = "decision", nullable = false)
     private Decision decision;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "governance_decision")
+    private GovernanceDecision governanceDecision;
+
+    @Column(name = "decision_explanation_json", columnDefinition = "text")
+    private String decisionExplanationJson;
+
+    @Column(name = "risk_factors_json", columnDefinition = "text")
+    private String riskFactorsJson;
+
     @Column(name = "recommendations_json", nullable = false, columnDefinition = "text")
     private String recommendationsJson;
+
+    @Column(name = "structured_recommendations_json", columnDefinition = "text")
+    private String structuredRecommendationsJson;
 
     @Column(name = "impact_json", columnDefinition = "text")
     private String impactJson;

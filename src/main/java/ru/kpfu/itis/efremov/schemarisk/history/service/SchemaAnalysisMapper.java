@@ -31,7 +31,11 @@ public class SchemaAnalysisMapper {
                 entity.getRiskScore(),
                 entity.getRiskLevel(),
                 entity.getDecision(),
+                entity.getGovernanceDecision(),
+                analysisJsonMapper.readDecisionExplanation(entity.getDecisionExplanationJson()),
+                analysisJsonMapper.readRiskFactors(entity.getRiskFactorsJson()),
                 analysisJsonMapper.readRecommendations(entity.getRecommendationsJson()),
+                analysisJsonMapper.readStructuredRecommendations(entity.getStructuredRecommendationsJson()),
                 analysisJsonMapper.readImpact(entity.getImpactJson()),
                 entity.getCreatedAt(),
                 entity.getCreatedBy()

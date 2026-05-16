@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.springframework.stereotype.Component;
@@ -92,13 +93,15 @@ public class AvroSchemaProvider implements SchemaProvider {
     }
 
     private String defaultToString(Object defaultValue) {
-        return defaultValue == null ? null : defaultValue.toString();
+        if (defaultValue == null || defaultValue == JsonProperties.NULL_VALUE) {
+            return null;
+        }
+        return defaultValue.toString();
     }
 
     private record SchemaInfo(String typeName, boolean nullable, NormalizedSchema nestedSchema) {
     }
 }
-
 
 
 

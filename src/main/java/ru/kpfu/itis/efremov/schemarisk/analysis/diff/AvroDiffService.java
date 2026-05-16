@@ -51,7 +51,7 @@ public class AvroDiffService {
         fieldNames.addAll(newSchema.getFields().keySet());
 
         for (String fieldName : fieldNames) {
-            String path = prefix.isBlank() ? fieldName : prefix + "." + fieldName;
+            String path = buildPath(prefix, fieldName);
             NormalizedField oldField = oldSchema.getFields().get(fieldName);
             NormalizedField newField = newSchema.getFields().get(fieldName);
 
@@ -76,6 +76,11 @@ public class AvroDiffService {
                         oldField.getDefaultValue(),
                         null
                 ));
+                continue;
+            }
+
+            if (isNestedRecord(oldField) && isNestedRecord(newField)) {
+                changes.addAll(diffFields(oldField.getNestedSchema(), newField.getNestedSchema(), path));
                 continue;
             }
 
@@ -152,26 +157,19 @@ public class AvroDiffService {
                         newField.getDefaultValue()
                 ));
             }
-
-            if ("record".equals(oldField.getType())
-                    && "record".equals(newField.getType())
-                    && oldField.getNestedSchema() != null
-                    && newField.getNestedSchema() != null) {
-                List<FieldChange> nestedChanges = diffFields(oldField.getNestedSchema(), newField.getNestedSchema(), path);
-                if (!nestedChanges.isEmpty()) {
-                    changes.add(buildChange(
-                            FieldChangeType.NESTED_CHANGED,
-                            path,
-                            oldField.getType(),
-                            newField.getType(),
-                            oldField.getDefaultValue(),
-                            newField.getDefaultValue()
-                    ));
-                }
-            }
         }
 
         return changes;
+    }
+
+    private boolean isNestedRecord(NormalizedField field) {
+        return field != null
+                && "record".equals(field.getType())
+                && field.getNestedSchema() != null;
+    }
+
+    private String buildPath(String prefix, String fieldName) {
+        return prefix == null || prefix.isBlank() ? fieldName : prefix + "." + fieldName;
     }
 
     private FieldChange buildChange(

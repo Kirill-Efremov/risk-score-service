@@ -9,7 +9,8 @@ public record AnalyzeVersionedSchemaChangeCommand(
         Integer newVersion,
         String newSchema,
         SchemaType schemaType,
-        CompatibilityMode compatibilityMode
+        CompatibilityMode compatibilityMode,
+        String createdBy
 ) {
 }
 

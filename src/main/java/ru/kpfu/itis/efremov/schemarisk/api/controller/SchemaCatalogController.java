@@ -19,7 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.kpfu.itis.efremov.schemarisk.analysis.service.SchemaPromotionService;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.RegisterSchemaVersionRequest;
+import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaPromotionRequest;
+import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaPromotionResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaVersionResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.error.ApiErrorResponse;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.RegisterSchemaVersionCommand;
@@ -32,25 +35,32 @@ import java.util.List;
 @Validated
 @RestController
 @RequestMapping("/api/v1/subjects")
-@Tag(name = "Schema Catalog", description = "Операции локального каталога схем")
+@Tag(
+        name = "Schema Catalog",
+        description = "Операции с версиями схем в настроенном каталоге. По умолчанию сервис работает в "
+                + "registry-first режиме и использует Schema Registry как источник истины."
+)
 public class SchemaCatalogController {
 
     private final RegisterSchemaVersionService registerSchemaVersionService;
     private final ListSchemaVersionsService listSchemaVersionsService;
     private final GetSchemaVersionService getSchemaVersionService;
+    private final SchemaPromotionService schemaPromotionService;
 
     public SchemaCatalogController(
             RegisterSchemaVersionService registerSchemaVersionService,
             ListSchemaVersionsService listSchemaVersionsService,
-            GetSchemaVersionService getSchemaVersionService
+            GetSchemaVersionService getSchemaVersionService,
+            SchemaPromotionService schemaPromotionService
     ) {
         this.registerSchemaVersionService = registerSchemaVersionService;
         this.listSchemaVersionsService = listSchemaVersionsService;
         this.getSchemaVersionService = getSchemaVersionService;
+        this.schemaPromotionService = schemaPromotionService;
     }
 
     @PostMapping("/{subject}/versions")
-    @Operation(summary = "Зарегистрировать новую версию схемы")
+    @Operation(summary = "Ручная регистрация версии схемы в Schema Registry через сервис")
     @ApiResponses({
             @ApiResponse(responseCode = "400", description = "Некорректный запрос",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
@@ -62,7 +72,7 @@ public class SchemaCatalogController {
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<SchemaVersionResponse> registerVersion(
-            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
+            @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,
             @Valid @RequestBody RegisterSchemaVersionRequest request
     ) {
@@ -83,8 +93,33 @@ public class SchemaCatalogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/{subject}/promotions")
+    @Operation(
+            summary = "Контролируемая публикация схемы",
+            description = "Анализирует новую схему относительно latest-версии в Schema Registry и регистрирует "
+                    + "её только если governance policy разрешает публикацию."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Результат controlled promotion flow"),
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Ресурс не найден",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Конфликт состояния",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
+                    content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    })
+    public ResponseEntity<SchemaPromotionResponse> promoteSchema(
+            @Parameter(description = "Имя subject", example = "user-created")
+            @PathVariable @NotBlank(message = "subject must not be blank") String subject,
+            @Valid @RequestBody SchemaPromotionRequest request
+    ) {
+        return ResponseEntity.ok(schemaPromotionService.promote(subject, request));
+    }
+
     @GetMapping("/{subject}/versions")
-    @Operation(summary = "Получить список версий схемы")
+    @Operation(summary = "Получить список версий схемы из Schema Registry")
     @ApiResponses({
             @ApiResponse(responseCode = "400", description = "Некорректный запрос",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
@@ -96,7 +131,7 @@ public class SchemaCatalogController {
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<List<SchemaVersionResponse>> listVersions(
-            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
+            @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject
     ) {
         List<SchemaVersionResponse> response = listSchemaVersionsService.getVersions(subject)
@@ -107,7 +142,7 @@ public class SchemaCatalogController {
     }
 
     @GetMapping("/{subject}/versions/{version}")
-    @Operation(summary = "Получить конкретную версию схемы")
+    @Operation(summary = "Получить конкретную версию схемы из Schema Registry")
     @ApiResponses({
             @ApiResponse(responseCode = "400", description = "Некорректный запрос",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))),
@@ -119,7 +154,7 @@ public class SchemaCatalogController {
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     public ResponseEntity<SchemaVersionResponse> getVersion(
-            @Parameter(description = "Имя subject (например: user-created)", example = "user-created")
+            @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,
             @Parameter(description = "Номер версии схемы", example = "2")
             @PathVariable @Positive(message = "version must be positive") int version
@@ -130,7 +165,3 @@ public class SchemaCatalogController {
         return ResponseEntity.ok(response);
     }
 }
-
-
-
-

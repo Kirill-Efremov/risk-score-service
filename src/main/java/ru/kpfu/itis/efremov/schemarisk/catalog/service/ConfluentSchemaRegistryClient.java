@@ -9,13 +9,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriUtils;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.config.ConfluentSchemaRegistryProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "confluent")
+@ConditionalOnProperty(prefix = "schema-catalog", name = "mode", havingValue = "confluent", matchIfMissing = true)
 public class ConfluentSchemaRegistryClient {
 
     private final RestClient restClient;
@@ -90,6 +91,23 @@ public class ConfluentSchemaRegistryClient {
         }
     }
 
+    public ConfluentSchemaRegisterResponse registerVersion(String subject, String schema, SchemaType schemaType) {
+        try {
+            ConfluentSchemaRegisterResponse response = restClient.post()
+                    .uri("/subjects/{subject}/versions", encodeSubject(subject))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ConfluentSchemaRegisterRequest(schemaType != null ? schemaType.name() : "AVRO", schema))
+                    .retrieve()
+                    .body(ConfluentSchemaRegisterResponse.class);
+            if (response == null) {
+                throw new IllegalStateException("Confluent Schema Registry returned an empty response");
+            }
+            return response;
+        } catch (HttpClientErrorException.NotFound exception) {
+            throw new ResourceNotFoundException("Subject not found in Confluent Schema Registry: " + subject);
+        }
+    }
+
     private String encodeSubject(String subject) {
         return UriUtils.encodePathSegment(subject, StandardCharsets.UTF_8);
     }
@@ -130,6 +148,18 @@ public class ConfluentSchemaRegistryClient {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ConfluentSchemaConfigResponse(
             String compatibilityLevel
+    ) {
+    }
+
+    public record ConfluentSchemaRegisterRequest(
+            String schemaType,
+            String schema
+    ) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record ConfluentSchemaRegisterResponse(
+            int id
     ) {
     }
 }

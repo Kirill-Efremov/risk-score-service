@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeVersionedSchemaChangeCommand;
+import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
+import ru.kpfu.itis.efremov.schemarisk.analysis.service.AnalyzeVersionedSchemaChangeService;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.AnalysisRecordResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.SchemaAnalysisResponse;
 import ru.kpfu.itis.efremov.schemarisk.api.dto.VersionedSchemaCheckRequest;
 import ru.kpfu.itis.efremov.schemarisk.api.error.ApiErrorResponse;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.SchemaAnalysisResult;
-import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeVersionedSchemaChangeCommand;
-import ru.kpfu.itis.efremov.schemarisk.analysis.service.AnalyzeVersionedSchemaChangeService;
 import ru.kpfu.itis.efremov.schemarisk.history.service.ListSubjectAnalysesService;
 
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.List;
 @Validated
 @RestController
 @RequestMapping("/api/v1/subjects")
-@Tag(name = "Schema Analysis (Versioned)", description = "Анализ версионированных схем")
+@Tag(name = "Schema Analysis (Versioned)", description = "Versioned-анализ схем относительно данных из Schema Registry.")
 public class SubjectSchemaCheckController {
 
     private final AnalyzeVersionedSchemaChangeService analyzeVersionedSchemaChangeService;
@@ -48,13 +48,14 @@ public class SubjectSchemaCheckController {
 
     @PostMapping("/{subject}/checks")
     @Operation(
-            summary = "Анализ изменения версии схемы",
-            description = "Анализирует изменение между версиями схем или draft-схемой."
+            summary = "Versioned-анализ схемы относительно версии из Schema Registry без публикации",
+            description = "Сравнивает версии схем из Schema Registry или latest/oldVersion из Registry с новой draft-схемой. "
+                    + "Новая схема не публикуется автоматически."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Результат анализа",
+                    description = "Результат versioned-анализа",
                     content = @Content(
                             schema = @Schema(implementation = SchemaAnalysisResponse.class),
                             examples = @ExampleObject(
@@ -67,7 +68,8 @@ public class SubjectSchemaCheckController {
                                               "diff": null,
                                               "riskScore": 65,
                                               "riskLevel": "MEDIUM",
-                                              "decision": "REQUIRE_CONSUMER_UPGRADE_FIRST",
+                                              "decision": "WARN",
+                                              "governanceDecision": "REQUIRE_CONSUMER_UPGRADE_FIRST",
                                               "decisionExplanation": [
                                                 "Breaking change detected",
                                                 "2 active consumers found"
@@ -82,31 +84,6 @@ public class SubjectSchemaCheckController {
                                                   "billing-service"
                                                 ],
                                                 "breaking": true
-                                              },
-                                              "impactGraph": {
-                                                "nodes": [
-                                                  {
-                                                    "id": "schema:user-created",
-                                                    "type": "SCHEMA",
-                                                    "label": "user-created",
-                                                    "impact": null,
-                                                    "critical": false
-                                                  },
-                                                  {
-                                                    "id": "service:billing-service",
-                                                    "type": "SERVICE",
-                                                    "label": "billing-service",
-                                                    "impact": "BREAKING",
-                                                    "critical": true
-                                                  }
-                                                ],
-                                                "edges": [
-                                                  {
-                                                    "from": "schema:user-created",
-                                                    "to": "service:billing-service",
-                                                    "type": "CONSUMER"
-                                                  }
-                                                ]
                                               }
                                             }
                                             """
@@ -134,7 +111,8 @@ public class SubjectSchemaCheckController {
                         request.getNewVersion(),
                         request.getNewSchema(),
                         request.getSchemaType(),
-                        request.getCompatibilityMode()
+                        request.getCompatibilityMode(),
+                        null
                 )
         );
 
@@ -144,7 +122,7 @@ public class SubjectSchemaCheckController {
     @GetMapping("/{subject}/checks")
     @Operation(
             summary = "Получить историю анализов по subject",
-            description = "Возвращает сохраненные анализы для указанного subject."
+            description = "Возвращает сохраненные результаты versioned-анализа для указанного subject."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "400", description = "Некорректный запрос",
@@ -167,4 +145,3 @@ public class SubjectSchemaCheckController {
         );
     }
 }
-

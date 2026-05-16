@@ -62,7 +62,7 @@ public class VersionedSchemaChangeResolver {
                         oldSchemaVersion.subject().description(),
                         command.newSchema(),
                         SchemaVersionStatus.DRAFT,
-                        SchemaSourceType.LOCAL,
+                        SchemaSourceType.CONFLUENT,
                         null
                 )
         );
