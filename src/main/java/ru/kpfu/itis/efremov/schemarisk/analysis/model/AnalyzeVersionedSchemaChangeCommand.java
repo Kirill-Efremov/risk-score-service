@@ -10,7 +10,8 @@ public record AnalyzeVersionedSchemaChangeCommand(
         String newSchema,
         SchemaType schemaType,
         CompatibilityMode compatibilityMode,
-        String createdBy
+        String createdBy,
+        boolean promotionAttempted
 ) {
 }
 

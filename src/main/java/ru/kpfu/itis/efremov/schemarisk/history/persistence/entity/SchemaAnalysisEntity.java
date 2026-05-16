@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.SchemaPromotionStatus;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskLevel;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.catalog.persistence.entity.SchemaSubjectEntity;
@@ -103,6 +104,22 @@ public class SchemaAnalysisEntity {
 
     @Column(name = "impact_json", columnDefinition = "text")
     private String impactJson;
+
+    @Column(name = "promotion_attempted")
+    private Boolean promotionAttempted;
+
+    @Column(name = "registered")
+    private Boolean registered;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "registration_status")
+    private SchemaPromotionStatus registrationStatus;
+
+    @Column(name = "registered_version")
+    private Integer registeredVersion;
+
+    @Column(name = "schema_registry_id")
+    private Integer schemaRegistryId;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;

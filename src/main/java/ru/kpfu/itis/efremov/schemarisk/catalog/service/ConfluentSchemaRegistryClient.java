@@ -7,7 +7,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriUtils;
+import ru.kpfu.itis.efremov.schemarisk.catalog.exception.SchemaRegistryConflictException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
 import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.config.ConfluentSchemaRegistryProperties;
@@ -49,6 +51,14 @@ public class ConfluentSchemaRegistryClient {
         } catch (HttpClientErrorException.NotFound exception) {
             throw new ResourceNotFoundException("Subject not found in Confluent Schema Registry: " + subject);
         }
+    }
+
+    private String resolveRegistryMessage(RestClientResponseException exception) {
+        String responseBody = exception.getResponseBodyAsString();
+        if (responseBody != null && !responseBody.isBlank()) {
+            return responseBody;
+        }
+        return exception.getStatusText();
     }
 
     public ConfluentSchemaVersionResponse getVersion(String subject, int version) {
@@ -105,6 +115,15 @@ public class ConfluentSchemaRegistryClient {
             return response;
         } catch (HttpClientErrorException.NotFound exception) {
             throw new ResourceNotFoundException("Subject not found in Confluent Schema Registry: " + subject);
+        } catch (RestClientResponseException exception) {
+            if (exception.getStatusCode().value() == 409) {
+                throw new SchemaRegistryConflictException(
+                        resolveRegistryMessage(exception),
+                        exception.getStatusCode().value(),
+                        exception.getResponseBodyAsString()
+                );
+            }
+            throw exception;
         }
     }
 

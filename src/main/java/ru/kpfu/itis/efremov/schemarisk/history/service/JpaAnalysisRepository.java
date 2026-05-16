@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kpfu.itis.efremov.schemarisk.history.model.AnalysisRecord;
 import ru.kpfu.itis.efremov.schemarisk.history.model.SaveAnalysisCommand;
+import ru.kpfu.itis.efremov.schemarisk.history.model.UpdatePromotionMetadataCommand;
 import ru.kpfu.itis.efremov.schemarisk.common.port.AnalysisRepository;
 import ru.kpfu.itis.efremov.schemarisk.history.persistence.entity.SchemaAnalysisEntity;
 import ru.kpfu.itis.efremov.schemarisk.history.persistence.repository.SchemaAnalysisRepository;
@@ -66,6 +67,11 @@ public class JpaAnalysisRepository implements AnalysisRepository {
                 analysisJsonMapper.writeStructuredRecommendations(command.structuredRecommendations())
         );
         entity.setImpactJson(analysisJsonMapper.writeImpact(command.impact()));
+        entity.setPromotionAttempted(command.promotionAttempted());
+        entity.setRegistered(command.registered());
+        entity.setRegistrationStatus(command.registrationStatus());
+        entity.setRegisteredVersion(command.registeredVersion());
+        entity.setSchemaRegistryId(command.schemaRegistryId());
         entity.setCreatedAt(Instant.now());
         entity.setCreatedBy(command.createdBy());
 
@@ -90,6 +96,19 @@ public class JpaAnalysisRepository implements AnalysisRepository {
             throw new ResourceNotFoundException("Subject not found: " + subject);
         }
         return records;
+    }
+
+    @Override
+    @Transactional
+    public AnalysisRecord updatePromotionMetadata(UpdatePromotionMetadataCommand command) {
+        SchemaAnalysisEntity entity = schemaAnalysisRepository.findById(command.analysisId())
+                .orElseThrow(() -> new ResourceNotFoundException("Analysis not found: " + command.analysisId()));
+        entity.setPromotionAttempted(command.promotionAttempted());
+        entity.setRegistered(command.registered());
+        entity.setRegistrationStatus(command.registrationStatus());
+        entity.setRegisteredVersion(command.registeredVersion());
+        entity.setSchemaRegistryId(command.schemaRegistryId());
+        return schemaAnalysisMapper.toRecord(schemaAnalysisRepository.save(entity));
     }
 
     private SchemaSubjectEntity resolveSubject(Long subjectId) {

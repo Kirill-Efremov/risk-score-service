@@ -14,6 +14,7 @@ import ru.kpfu.itis.efremov.schemarisk.common.port.AnalysisRepository;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecisionService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.RecommendationService;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.SchemaPromotionStatus;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.StructuredRecommendation;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskScorer;
@@ -110,19 +111,7 @@ public class AnalyzeVersionedSchemaChangeService {
                 impact,
                 governanceDecision
         );
-        SchemaAnalysisResult result = new SchemaAnalysisResult(
-                baseResult.compatibilityResult(),
-                baseResult.diffResult(),
-                adjustedRisk,
-                baseResult.recommendations(),
-                structuredRecommendations,
-                impact,
-                impactGraph,
-                governanceDecision,
-                decisionExplanation
-        );
-
-        analysisRepository.save(
+        var savedRecord = analysisRepository.save(
                 new SaveAnalysisCommand(
                         resolvedChange.oldSchemaVersion().subject().localId(),
                         resolvedChange.subject(),
@@ -132,19 +121,35 @@ public class AnalyzeVersionedSchemaChangeService {
                         resolvedChange.newSchemaVersion().version(),
                         resolvedChange.newSchemaVersion().sourceType(),
                         resolvedChange.newSchemaVersion().externalSchemaId(),
-                        result.compatibilityResult(),
-                        result.diffResult(),
-                        result.riskResult(),
-                        result.governanceDecision(),
-                        result.decisionExplanation(),
-                        result.recommendations(),
-                        result.structuredRecommendations(),
-                        result.impact(),
-                        command.createdBy()
+                        baseResult.compatibilityResult(),
+                        baseResult.diffResult(),
+                        adjustedRisk,
+                        governanceDecision,
+                        decisionExplanation,
+                        baseResult.recommendations(),
+                        structuredRecommendations,
+                        impact,
+                        command.createdBy(),
+                        command.promotionAttempted(),
+                        null,
+                        command.promotionAttempted() ? SchemaPromotionStatus.ANALYSIS_ONLY : null,
+                        null,
+                        null
                 )
         );
 
-        return result;
+        return new SchemaAnalysisResult(
+                baseResult.compatibilityResult(),
+                baseResult.diffResult(),
+                adjustedRisk,
+                baseResult.recommendations(),
+                structuredRecommendations,
+                impact,
+                impactGraph,
+                governanceDecision,
+                decisionExplanation,
+                savedRecord.id()
+        );
     }
 
     private String extractSchemaName(ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType schemaType, String schemaText) {

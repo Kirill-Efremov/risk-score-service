@@ -19,7 +19,8 @@ public record SchemaAnalysisResult(
         ImpactResult impact,
         UsageGraphResponse impactGraph,
         GovernanceDecision governanceDecision,
-        List<String> decisionExplanation
+        List<String> decisionExplanation,
+        Long analysisId
 ) {
     public SchemaAnalysisResult {
         recommendations = recommendations != null ? recommendations : List.of();

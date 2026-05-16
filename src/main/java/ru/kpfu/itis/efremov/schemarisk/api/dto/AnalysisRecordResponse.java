@@ -8,7 +8,7 @@ import ru.kpfu.itis.efremov.schemarisk.history.model.AnalysisRecord;
 import java.time.Instant;
 import java.util.List;
 
-@Schema(description = "Сохраненный результат анализа схемы")
+@Schema(description = "Сохранённый результат анализа схемы")
 public record AnalysisRecordResponse(
         @Schema(description = "Идентификатор анализа", example = "42")
         Long id,
@@ -36,7 +36,7 @@ public record AnalysisRecordResponse(
         )
         String decision,
         @Schema(
-                description = "Предметное governance-решение с учетом policy и контекста rollout.",
+                description = "Предметное governance-решение с учётом policy и контекста rollout.",
                 example = "REQUIRE_CONSUMER_UPGRADE_FIRST"
         )
         String governanceDecision,
@@ -50,6 +50,16 @@ public record AnalysisRecordResponse(
         List<StructuredRecommendationResponse> structuredRecommendations,
         @Schema(description = "Impact-анализ зависимых сервисов")
         ImpactResponse impact,
+        @Schema(description = "Флаг, что анализ был выполнен в рамках controlled promotion flow")
+        Boolean promotionAttempted,
+        @Schema(description = "Флаг, что схема была зарегистрирована в Schema Registry")
+        Boolean registered,
+        @Schema(description = "Статус попытки публикации схемы")
+        String registrationStatus,
+        @Schema(description = "Номер версии, зарегистрированной в Schema Registry")
+        Integer registeredVersion,
+        @Schema(description = "ID схемы в Schema Registry")
+        Integer schemaRegistryId,
         @Schema(description = "Время создания записи")
         Instant createdAt,
         @Schema(description = "Кто инициировал анализ")
@@ -76,6 +86,11 @@ public record AnalysisRecordResponse(
                         .map(StructuredRecommendationResponse::fromRecommendation)
                         .toList(),
                 ImpactResponse.fromResult(record.impact()),
+                record.promotionAttempted(),
+                record.registered(),
+                record.registrationStatus() != null ? record.registrationStatus().name() : null,
+                record.registeredVersion(),
+                record.schemaRegistryId(),
                 record.createdAt(),
                 record.createdBy()
         );

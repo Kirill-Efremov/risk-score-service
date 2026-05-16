@@ -112,7 +112,8 @@ public class SubjectSchemaCheckController {
                         request.getNewSchema(),
                         request.getSchemaType(),
                         request.getCompatibilityMode(),
-                        null
+                        null,
+                        false
                 )
         );
 

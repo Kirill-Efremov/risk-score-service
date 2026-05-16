@@ -13,10 +13,13 @@ import ru.kpfu.itis.efremov.schemarisk.catalog.model.RegisterSchemaVersionComman
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaVersionInfo;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaVersionStatus;
+import ru.kpfu.itis.efremov.schemarisk.catalog.exception.SchemaRegistryConflictException;
 import ru.kpfu.itis.efremov.schemarisk.catalog.service.RegisterSchemaVersionService;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
 import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
+import ru.kpfu.itis.efremov.schemarisk.common.port.AnalysisRepository;
 import ru.kpfu.itis.efremov.schemarisk.common.port.SchemaCatalog;
+import ru.kpfu.itis.efremov.schemarisk.history.model.UpdatePromotionMetadataCommand;
 
 @Service
 public class SchemaPromotionService {
@@ -24,15 +27,18 @@ public class SchemaPromotionService {
     private final SchemaCatalog schemaCatalog;
     private final AnalyzeVersionedSchemaChangeService analyzeVersionedSchemaChangeService;
     private final RegisterSchemaVersionService registerSchemaVersionService;
+    private final AnalysisRepository analysisRepository;
 
     public SchemaPromotionService(
             SchemaCatalog schemaCatalog,
             AnalyzeVersionedSchemaChangeService analyzeVersionedSchemaChangeService,
-            RegisterSchemaVersionService registerSchemaVersionService
+            RegisterSchemaVersionService registerSchemaVersionService,
+            AnalysisRepository analysisRepository
     ) {
         this.schemaCatalog = schemaCatalog;
         this.analyzeVersionedSchemaChangeService = analyzeVersionedSchemaChangeService;
         this.registerSchemaVersionService = registerSchemaVersionService;
+        this.analysisRepository = analysisRepository;
     }
 
     public SchemaPromotionResponse promote(String subject, SchemaPromotionRequest request) {
@@ -49,13 +55,21 @@ public class SchemaPromotionService {
                         request.getSchemaText(),
                         request.getSchemaType(),
                         request.getCompatibilityMode(),
-                        request.getCreatedBy()
+                        request.getCreatedBy(),
+                        true
                 )
         );
 
         GovernanceDecision governanceDecision = analysisResult.governanceDecision();
         SchemaPromotionStatus promotionStatus = resolvePromotionStatus(governanceDecision);
         if (promotionStatus != SchemaPromotionStatus.REGISTERED) {
+            updatePromotionMetadata(
+                    analysisResult,
+                    false,
+                    promotionStatus,
+                    null,
+                    null
+            );
             return new SchemaPromotionResponse(
                     subject,
                     false,
@@ -83,6 +97,13 @@ public class SchemaPromotionService {
                             null
                     )
             );
+            updatePromotionMetadata(
+                    analysisResult,
+                    true,
+                    SchemaPromotionStatus.REGISTERED,
+                    registeredVersion.version(),
+                    parseRegistryId(registeredVersion.externalSchemaId())
+            );
             return new SchemaPromotionResponse(
                     subject,
                     true,
@@ -93,7 +114,32 @@ public class SchemaPromotionService {
                     "Schema was registered in Schema Registry",
                     SchemaAnalysisResponse.fromResult(analysisResult)
             );
+        } catch (SchemaRegistryConflictException exception) {
+            updatePromotionMetadata(
+                    analysisResult,
+                    false,
+                    SchemaPromotionStatus.REGISTRY_REJECTED,
+                    null,
+                    null
+            );
+            return new SchemaPromotionResponse(
+                    subject,
+                    false,
+                    latestVersion.version(),
+                    null,
+                    null,
+                    SchemaPromotionStatus.REGISTRY_REJECTED,
+                    buildRegistryRejectedMessage(exception),
+                    SchemaAnalysisResponse.fromResult(analysisResult)
+            );
         } catch (RestClientResponseException exception) {
+            updatePromotionMetadata(
+                    analysisResult,
+                    false,
+                    SchemaPromotionStatus.REGISTRY_REJECTED,
+                    null,
+                    null
+            );
             return new SchemaPromotionResponse(
                     subject,
                     false,
@@ -141,6 +187,17 @@ public class SchemaPromotionService {
                     "Schema was registered in Schema Registry as the first version",
                     null
             );
+        } catch (SchemaRegistryConflictException exception) {
+            return new SchemaPromotionResponse(
+                    subject,
+                    false,
+                    null,
+                    null,
+                    null,
+                    SchemaPromotionStatus.REGISTRY_REJECTED,
+                    buildRegistryRejectedMessage(exception),
+                    null
+            );
         } catch (RestClientResponseException exception) {
             return new SchemaPromotionResponse(
                     subject,
@@ -153,6 +210,29 @@ public class SchemaPromotionService {
                     null
             );
         }
+    }
+
+    private void updatePromotionMetadata(
+            SchemaAnalysisResult analysisResult,
+            Boolean registered,
+            SchemaPromotionStatus registrationStatus,
+            Integer registeredVersion,
+            Integer schemaRegistryId
+    ) {
+        if (analysisResult == null || analysisResult.analysisId() == null) {
+            return;
+        }
+
+        analysisRepository.updatePromotionMetadata(
+                new UpdatePromotionMetadataCommand(
+                        analysisResult.analysisId(),
+                        true,
+                        registered,
+                        registrationStatus,
+                        registeredVersion,
+                        schemaRegistryId
+                )
+        );
     }
 
     private SchemaPromotionStatus resolvePromotionStatus(GovernanceDecision governanceDecision) {
@@ -190,6 +270,13 @@ public class SchemaPromotionService {
             return "Schema Registry rejected the schema: " + responseBody;
         }
         return "Schema Registry rejected the schema: " + exception.getStatusText();
+    }
+
+    private String buildRegistryRejectedMessage(SchemaRegistryConflictException exception) {
+        if (exception.getRegistryResponseBody() != null && !exception.getRegistryResponseBody().isBlank()) {
+            return "Schema Registry rejected the schema: " + exception.getRegistryResponseBody();
+        }
+        return "Schema Registry rejected the schema: " + exception.getMessage();
     }
 
     private Integer parseRegistryId(String externalSchemaId) {

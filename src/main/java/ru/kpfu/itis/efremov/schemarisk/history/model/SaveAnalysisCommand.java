@@ -4,6 +4,7 @@ import ru.kpfu.itis.efremov.schemarisk.analysis.impact.ImpactResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.diff.DiffResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.CompatibilityResult;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
+import ru.kpfu.itis.efremov.schemarisk.analysis.governance.SchemaPromotionStatus;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.StructuredRecommendation;
 import ru.kpfu.itis.efremov.schemarisk.analysis.risk.RiskResult;
 import ru.kpfu.itis.efremov.schemarisk.catalog.model.SchemaSourceType;
@@ -27,6 +28,11 @@ public record SaveAnalysisCommand(
         List<String> recommendations,
         List<StructuredRecommendation> structuredRecommendations,
         ImpactResult impact,
-        String createdBy
+        String createdBy,
+        Boolean promotionAttempted,
+        Boolean registered,
+        SchemaPromotionStatus registrationStatus,
+        Integer registeredVersion,
+        Integer schemaRegistryId
 ) {
 }

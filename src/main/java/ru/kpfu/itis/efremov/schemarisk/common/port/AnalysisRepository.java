@@ -2,6 +2,7 @@ package ru.kpfu.itis.efremov.schemarisk.common.port;
 
 import ru.kpfu.itis.efremov.schemarisk.history.model.AnalysisRecord;
 import ru.kpfu.itis.efremov.schemarisk.history.model.SaveAnalysisCommand;
+import ru.kpfu.itis.efremov.schemarisk.history.model.UpdatePromotionMetadataCommand;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public interface AnalysisRepository {
     AnalysisRecord getById(Long analysisId);
 
     List<AnalysisRecord> listBySubject(String subject);
+
+    AnalysisRecord updatePromotionMetadata(UpdatePromotionMetadataCommand command);
 }
 
 

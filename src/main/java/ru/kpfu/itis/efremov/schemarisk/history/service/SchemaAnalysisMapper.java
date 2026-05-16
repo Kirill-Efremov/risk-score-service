@@ -37,6 +37,11 @@ public class SchemaAnalysisMapper {
                 analysisJsonMapper.readRecommendations(entity.getRecommendationsJson()),
                 analysisJsonMapper.readStructuredRecommendations(entity.getStructuredRecommendationsJson()),
                 analysisJsonMapper.readImpact(entity.getImpactJson()),
+                entity.getPromotionAttempted(),
+                entity.getRegistered(),
+                entity.getRegistrationStatus(),
+                entity.getRegisteredVersion(),
+                entity.getSchemaRegistryId(),
                 entity.getCreatedAt(),
                 entity.getCreatedBy()
         );

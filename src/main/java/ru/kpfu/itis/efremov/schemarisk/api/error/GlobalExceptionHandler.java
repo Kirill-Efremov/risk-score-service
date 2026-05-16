@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.kpfu.itis.efremov.schemarisk.catalog.exception.SchemaRegistryConflictException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidRequestException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidSchemaException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
@@ -143,6 +144,21 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND,
                 "NOT_FOUND",
                 exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(SchemaRegistryConflictException.class)
+    public ApiErrorResponse handleSchemaRegistryConflict(
+            SchemaRegistryConflictException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.CONFLICT,
+                "SCHEMA_REGISTRY_CONFLICT",
+                "Schema Registry rejected schema registration: " + exception.getMessage(),
                 request,
                 List.of()
         );

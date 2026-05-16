@@ -78,7 +78,8 @@ public class SchemaAnalysisExecutor {
                 null,
                 null,
                 null,
-                List.of()
+                List.of(),
+                null
         );
     }
 
