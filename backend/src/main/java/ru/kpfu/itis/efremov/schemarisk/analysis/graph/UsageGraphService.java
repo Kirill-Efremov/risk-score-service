@@ -32,7 +32,9 @@ public class UsageGraphService {
     }
 
     public UsageGraphResponse buildGraph(String subject, ImpactResult impact) {
-        List<ServiceUsageInfo> usages = serviceUsageRepository.getUsageBySubject(subject);
+        List<ServiceUsageInfo> usages = new ArrayList<>();
+        usages.addAll(serviceUsageRepository.getActiveConsumersBySubject(subject));
+        usages.addAll(serviceUsageRepository.getActiveProducersBySubject(subject));
 
         Map<String, GraphNodeDto> nodes = new LinkedHashMap<>();
         List<GraphEdgeDto> edges = new ArrayList<>();

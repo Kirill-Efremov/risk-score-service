@@ -15,6 +15,8 @@ public record ServiceUsageResponse(
         String serviceName,
         @Schema(description = "Признак критичности сервиса", example = "true")
         boolean critical,
+        @Schema(description = "Признак активности сервиса", example = "true")
+        boolean serviceActive,
         @Schema(description = "Имя subject", example = "user-created")
         String subject,
         @Schema(description = "Версия схемы", example = "2")
@@ -27,6 +29,8 @@ public record ServiceUsageResponse(
         boolean active,
         @Schema(description = "Время создания")
         Instant createdAt,
+        @Schema(description = "Время последнего обновления")
+        Instant updatedAt,
         @Schema(description = "Время начала активности")
         Instant activeFrom,
         @Schema(description = "Время окончания активности")
@@ -38,18 +42,16 @@ public record ServiceUsageResponse(
                 info.serviceId(),
                 info.serviceName(),
                 info.critical(),
+                info.serviceActive(),
                 info.subject(),
                 info.version(),
                 info.role().name(),
                 info.status().name(),
                 info.active(),
                 info.createdAt(),
+                info.updatedAt(),
                 info.activeFrom(),
                 info.activeTo()
         );
     }
 }
-
-
-
-

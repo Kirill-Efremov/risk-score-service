@@ -7,10 +7,12 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriUtils;
 import ru.kpfu.itis.efremov.schemarisk.catalog.exception.SchemaRegistryConflictException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.SchemaRegistryUnavailableException;
 import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 import ru.kpfu.itis.efremov.schemarisk.config.ConfluentSchemaRegistryProperties;
 
@@ -50,16 +52,22 @@ public class ConfluentSchemaRegistryClient {
                     .body(ConfluentSchemaVersionResponse.class);
         } catch (HttpClientErrorException.NotFound exception) {
             throw new ResourceNotFoundException("Subject not found in Confluent Schema Registry: " + subject);
+        } catch (RestClientException exception) {
+            throw new SchemaRegistryUnavailableException("Schema Registry is unavailable", exception);
         }
     }
 
     public List<String> listSubjects() {
-        List<String> subjects = restClient.get()
-                .uri("/subjects")
-                .retrieve()
-                .body(new ParameterizedTypeReference<>() {
-                });
-        return subjects != null ? subjects : List.of();
+        try {
+            List<String> subjects = restClient.get()
+                    .uri("/subjects")
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {
+                    });
+            return subjects != null ? subjects : List.of();
+        } catch (RestClientException exception) {
+            throw new SchemaRegistryUnavailableException("Schema Registry is unavailable", exception);
+        }
     }
 
     private String resolveRegistryMessage(RestClientResponseException exception) {
@@ -80,6 +88,8 @@ public class ConfluentSchemaRegistryClient {
             throw new ResourceNotFoundException(
                     "Schema version not found in Confluent Schema Registry: subject=" + subject + ", version=" + version
             );
+        } catch (RestClientException exception) {
+            throw new SchemaRegistryUnavailableException("Schema Registry is unavailable", exception);
         }
     }
 
@@ -96,6 +106,8 @@ public class ConfluentSchemaRegistryClient {
             return versions;
         } catch (HttpClientErrorException.NotFound exception) {
             throw new ResourceNotFoundException("Subject not found in Confluent Schema Registry: " + subject);
+        } catch (RestClientException exception) {
+            throw new SchemaRegistryUnavailableException("Schema Registry is unavailable", exception);
         }
     }
 
@@ -107,6 +119,8 @@ public class ConfluentSchemaRegistryClient {
                     .body(ConfluentSchemaConfigResponse.class);
         } catch (HttpClientErrorException.NotFound exception) {
             return null;
+        } catch (RestClientException exception) {
+            throw new SchemaRegistryUnavailableException("Schema Registry is unavailable", exception);
         }
     }
 
@@ -133,6 +147,8 @@ public class ConfluentSchemaRegistryClient {
                 );
             }
             throw exception;
+        } catch (RestClientException exception) {
+            throw new SchemaRegistryUnavailableException("Schema Registry is unavailable", exception);
         }
     }
 

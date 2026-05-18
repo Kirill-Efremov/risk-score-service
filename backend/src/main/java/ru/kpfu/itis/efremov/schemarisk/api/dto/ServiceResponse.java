@@ -13,14 +13,27 @@ public record ServiceResponse(
         String name,
         @Schema(description = "Признак критичности сервиса", example = "true")
         boolean critical,
+        @Schema(description = "Признак активности сервиса", example = "true")
+        boolean active,
+        @Schema(description = "Владелец сервиса", example = "billing-team")
+        String owner,
+        @Schema(description = "Описание сервиса", example = "Handles billing events")
+        String description,
         @Schema(description = "Время создания")
-        Instant createdAt
+        Instant createdAt,
+        @Schema(description = "Время последнего обновления")
+        Instant updatedAt
 ) {
     public static ServiceResponse fromInfo(ServiceInfo info) {
-        return new ServiceResponse(info.id(), info.name(), info.critical(), info.createdAt());
+        return new ServiceResponse(
+                info.id(),
+                info.name(),
+                info.critical(),
+                info.active(),
+                info.owner(),
+                info.description(),
+                info.createdAt(),
+                info.updatedAt()
+        );
     }
 }
-
-
-
-

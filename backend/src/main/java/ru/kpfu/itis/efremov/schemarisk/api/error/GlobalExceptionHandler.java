@@ -14,7 +14,15 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import ru.kpfu.itis.efremov.schemarisk.catalog.exception.SchemaRegistryConflictException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidRequestException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidSchemaException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidUsageOperationException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.SchemaRegistryUnavailableException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.SchemaSubjectNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.SchemaVersionNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.ServiceAlreadyExistsException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.ServiceNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.ServiceUsageAlreadyExistsException;
+import ru.kpfu.itis.efremov.schemarisk.common.exception.ServiceUsageNotFoundException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.UnsupportedSchemaTypeException;
 
 import java.time.Instant;
@@ -52,7 +60,7 @@ public class GlobalExceptionHandler {
     ) {
         return buildError(
                 HttpStatus.BAD_REQUEST,
-                "INVALID_REQUEST",
+                "VALIDATION_ERROR",
                 exception.getMessage(),
                 request,
                 List.of()
@@ -67,7 +75,7 @@ public class GlobalExceptionHandler {
     ) {
         return buildError(
                 HttpStatus.BAD_REQUEST,
-                "INVALID_REQUEST_BODY",
+                "VALIDATION_ERROR",
                 "Request body is invalid or contains unsupported enum values",
                 request,
                 List.of()
@@ -120,6 +128,21 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidUsageOperationException.class)
+    public ApiErrorResponse handleInvalidUsageOperation(
+            InvalidUsageOperationException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_USAGE_OPERATION",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({InvalidRequestException.class, IllegalArgumentException.class})
     public ApiErrorResponse handleInvalidRequest(
             RuntimeException exception,
@@ -128,6 +151,111 @@ public class GlobalExceptionHandler {
         return buildError(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_REQUEST",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ServiceNotFoundException.class)
+    public ApiErrorResponse handleServiceNotFound(
+            ServiceNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "SERVICE_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ServiceAlreadyExistsException.class)
+    public ApiErrorResponse handleServiceAlreadyExists(
+            ServiceAlreadyExistsException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.CONFLICT,
+                "SERVICE_ALREADY_EXISTS",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ServiceUsageNotFoundException.class)
+    public ApiErrorResponse handleServiceUsageNotFound(
+            ServiceUsageNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "SERVICE_USAGE_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ServiceUsageAlreadyExistsException.class)
+    public ApiErrorResponse handleServiceUsageAlreadyExists(
+            ServiceUsageAlreadyExistsException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.CONFLICT,
+                "SERVICE_USAGE_ALREADY_EXISTS",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(SchemaSubjectNotFoundException.class)
+    public ApiErrorResponse handleSchemaSubjectNotFound(
+            SchemaSubjectNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "SCHEMA_SUBJECT_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(SchemaVersionNotFoundException.class)
+    public ApiErrorResponse handleSchemaVersionNotFound(
+            SchemaVersionNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "SCHEMA_VERSION_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(SchemaRegistryUnavailableException.class)
+    public ApiErrorResponse handleSchemaRegistryUnavailable(
+            SchemaRegistryUnavailableException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "SCHEMA_REGISTRY_UNAVAILABLE",
                 exception.getMessage(),
                 request,
                 List.of()
@@ -204,7 +332,3 @@ public class GlobalExceptionHandler {
                 .build();
     }
 }
-
-
-
-

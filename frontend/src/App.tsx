@@ -5,6 +5,8 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { ImpactGraphPage } from "./pages/ImpactGraphPage";
 import { PromotionPage } from "./pages/PromotionPage";
 import { RawAnalysisPage } from "./pages/RawAnalysisPage";
+import { ServiceDetailPage } from "./pages/ServiceDetailPage";
+import { ServicesPage } from "./pages/ServicesPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { UsageMapPage } from "./pages/UsageMapPage";
 import { VersionedAnalysisPage } from "./pages/VersionedAnalysisPage";
@@ -17,6 +19,8 @@ export default function App() {
         <Route path="/raw-analysis" element={<RawAnalysisPage />} />
         <Route path="/versioned-analysis" element={<VersionedAnalysisPage />} />
         <Route path="/promotion" element={<PromotionPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
         <Route path="/usage-map" element={<UsageMapPage />} />
         <Route path="/impact-graph" element={<ImpactGraphPage />} />
         <Route path="/history" element={<HistoryPage />} />

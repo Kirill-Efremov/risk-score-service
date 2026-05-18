@@ -6,7 +6,11 @@ public record ServiceInfo(
         Long id,
         String name,
         boolean critical,
-        Instant createdAt
+        boolean active,
+        String owner,
+        String description,
+        Instant createdAt,
+        Instant updatedAt
 ) {
 }
 

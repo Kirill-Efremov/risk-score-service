@@ -10,18 +10,18 @@ import {
 import { NavLink } from "react-router-dom";
 
 const links = [
+  { to: "/versioned-analysis", label: "Versioned Analysis", icon: ShieldCheck },
   { to: "/promotion", label: "Promotion", icon: Send },
   { to: "/raw-analysis", label: "Raw Analysis", icon: GitCompareArrows },
-  { to: "/versioned-analysis", label: "Versioned Analysis", icon: ShieldCheck },
-  { to: "/usage-map", label: "Usage Map", icon: Activity },
-  { to: "/impact-graph", label: "Impact Graph", icon: Waypoints },
+  { to: "/services", label: "Services", icon: Activity },
   { to: "/history", label: "History", icon: Clock3 },
+  { to: "/impact-graph", label: "Impact Graph", icon: Waypoints },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {
   return (
-    <aside className="flex w-full lg:w-[260px] shrink-0 self-start rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-panel backdrop-blur lg:sticky lg:top-6">
+    <aside className="flex w-full shrink-0 self-start rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-panel backdrop-blur lg:sticky lg:top-6 lg:w-[260px]">
       <div className="w-full">
         <div className="px-2 py-2">
           <h1 className="text-[28px] font-semibold leading-[1.35] text-slate-900">
@@ -45,7 +45,7 @@ export function Sidebar() {
               }
             >
               <Icon size={20} className="shrink-0" />
-              <span className="leading-7">
+              <span className="leading-6">
                 {label === "Raw Analysis" ? (
                   <>
                     Raw
@@ -57,12 +57,6 @@ export function Sidebar() {
                     Versioned
                     <br />
                     Analysis
-                  </>
-                ) : label === "Usage Map" ? (
-                  <>
-                    Usage
-                    <br />
-                    Map
                   </>
                 ) : label === "Impact Graph" ? (
                   <>

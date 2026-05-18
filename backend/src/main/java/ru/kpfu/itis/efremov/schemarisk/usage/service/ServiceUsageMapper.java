@@ -14,7 +14,11 @@ public class ServiceUsageMapper {
                 entity.getId(),
                 entity.getName(),
                 entity.isCritical(),
-                entity.getCreatedAt()
+                entity.isActive(),
+                entity.getOwner(),
+                entity.getDescription(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
         );
     }
 
@@ -24,12 +28,14 @@ public class ServiceUsageMapper {
                 entity.getService().getId(),
                 entity.getService().getName(),
                 entity.getService().isCritical(),
+                entity.getService().isActive(),
                 entity.getSubject(),
                 entity.getVersion(),
                 entity.getRole(),
                 entity.getStatus(),
                 entity.isActive(),
                 entity.getCreatedAt(),
+                entity.getUpdatedAt(),
                 entity.getActiveFrom(),
                 entity.getActiveTo()
         );

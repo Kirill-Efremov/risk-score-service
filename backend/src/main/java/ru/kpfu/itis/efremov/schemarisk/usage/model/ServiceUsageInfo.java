@@ -7,12 +7,14 @@ public record ServiceUsageInfo(
         Long serviceId,
         String serviceName,
         boolean critical,
+        boolean serviceActive,
         String subject,
         Integer version,
         ServiceRole role,
         UsageStatus status,
         boolean active,
         Instant createdAt,
+        Instant updatedAt,
         Instant activeFrom,
         Instant activeTo
 ) {

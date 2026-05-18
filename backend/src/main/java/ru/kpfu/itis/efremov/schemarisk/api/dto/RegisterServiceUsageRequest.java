@@ -8,25 +8,25 @@ import lombok.Data;
 import ru.kpfu.itis.efremov.schemarisk.usage.model.ServiceRole;
 
 @Data
-@Schema(description = "Запрос на регистрацию использования схемы сервисом")
+@Schema(description = "Request for service usage registration")
 public class RegisterServiceUsageRequest {
 
     @NotBlank(message = "subject must not be blank")
-    @Schema(description = "Имя subject", example = "user-created")
+    @Schema(description = "Subject name", example = "user-created")
     private String subject;
 
+    @NotNull(message = "version is required")
     @Positive(message = "version must be positive")
-    @Schema(description = "Версия схемы", example = "2")
+    @Schema(description = "Schema version", example = "2")
     private Integer version;
 
     @NotNull(message = "role is required")
-    @Schema(description = "Роль сервиса относительно схемы", example = "CONSUMER")
+    @Schema(description = "Service role relative to the schema", example = "CONSUMER")
     private ServiceRole role;
 
-    @Schema(description = "Флаг активности usage", example = "true")
+    @Schema(description = "Whether the usage is active", example = "true")
     private Boolean active;
+
+    @Schema(description = "Who created the usage link", example = "system")
+    private String createdBy;
 }
-
-
-
-

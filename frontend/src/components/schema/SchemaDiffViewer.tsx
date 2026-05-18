@@ -10,19 +10,22 @@ export function SchemaDiffViewer({
   if (!oldValue && !newValue) {
     return (
       <div className="panel px-5 py-4 text-sm text-slate-500">
-        Текст схем недоступен для визуального сравнения.
+        Schema text is not available for visual comparison.
       </div>
     );
   }
 
+  const normalizedOldValue = normalizeSchemaForDiff(oldValue);
+  const normalizedNewValue = normalizeSchemaForDiff(newValue);
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <ReactDiffViewer
-        oldValue={oldValue ?? ""}
-        newValue={newValue ?? ""}
+        oldValue={normalizedOldValue}
+        newValue={normalizedNewValue}
         splitView
         showDiffOnly={false}
-        compareMethod={DiffMethod.WORDS}
+        compareMethod={DiffMethod.LINES}
         leftTitle="Old schema"
         rightTitle="New schema"
         styles={{
@@ -52,4 +55,21 @@ export function SchemaDiffViewer({
       />
     </div>
   );
+}
+
+function normalizeSchemaForDiff(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  try {
+    return JSON.stringify(JSON.parse(trimmed), null, 2);
+  } catch {
+    return trimmed;
+  }
 }
