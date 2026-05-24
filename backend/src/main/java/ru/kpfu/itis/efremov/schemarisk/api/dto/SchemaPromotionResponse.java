@@ -19,6 +19,12 @@ public record SchemaPromotionResponse(
         SchemaPromotionStatus registrationStatus,
         @Schema(description = "Пояснение результата регистрации")
         String registrationMessage,
+        @Schema(description = "Требуется ли ручное согласование перед публикацией", example = "false")
+        boolean approvalRequired,
+        @Schema(description = "Идентификатор заявки на согласование", example = "12")
+        Long approvalId,
+        @Schema(description = "Статус заявки на согласование", example = "PENDING")
+        String approvalStatus,
         @Schema(description = "Полный результат анализа, на основе которого было принято решение")
         SchemaAnalysisResponse analysis,
         @Schema(description = "Текст предыдущей схемы для UI diff viewer")

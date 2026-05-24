@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
+import { ApiError } from "../api/client";
 import { promotionApi } from "../api/promotionApi";
 import { ErrorAlert } from "../components/common/ErrorAlert";
 import { PromotionStatusBadge } from "../components/common/PromotionStatusBadge";
@@ -26,29 +29,29 @@ const draftSchema = `{
 }`;
 
 export function PromotionPage() {
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [subject, setSubject] = useState("payment-created");
   const [schemaText, setSchemaText] = useState(draftSchema);
   const [description, setDescription] = useState("Frontend controlled promotion");
-  const [createdBy, setCreatedBy] = useState("frontend-operator");
   const [result, setResult] = useState<SchemaPromotionResponse | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ApiError | null>(null);
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       setResult(
         await promotionApi.promoteSchema(subject, {
           schemaType: "AVRO",
           compatibilityMode: "BACKWARD",
           description,
-          createdBy,
           schemaText,
         }),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Request failed");
+      setError(toApiError(err));
     } finally {
       setLoading(false);
     }
@@ -62,7 +65,6 @@ export function PromotionPage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <input className="field" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="subject" />
           <input className="field" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="description" />
-          <input className="field" value={createdBy} onChange={(e) => setCreatedBy(e.target.value)} placeholder="createdBy" />
           <select className="field" defaultValue="BACKWARD">
             <option>BACKWARD</option>
           </select>
@@ -74,14 +76,14 @@ export function PromotionPage() {
           {loading ? "Проверяем..." : "Проверить и опубликовать"}
         </button>
       </div>
-      <ErrorAlert message={error} />
+      <ErrorAlert title="Не удалось выполнить controlled promotion" error={error} />
       {result ? (
         <div className="space-y-6">
           <div
             className={`panel p-6 ${
               result.registered
                 ? "border-emerald-200 bg-emerald-50/70"
-                : result.registrationStatus?.includes("REQUIRES")
+                : result.approvalRequired || result.registrationStatus?.includes("REQUIRES")
                   ? "border-amber-200 bg-amber-50/70"
                   : "border-rose-200 bg-rose-50/70"
             }`}
@@ -90,12 +92,41 @@ export function PromotionPage() {
               <PromotionStatusBadge value={result.registrationStatus} />
               <span className="text-sm text-slate-700">{result.registrationMessage}</span>
             </div>
+            {result.registered ? (
+              <p className="mt-3 text-sm text-emerald-800">
+                Схема опубликована в Schema Registry.
+              </p>
+            ) : null}
+            {result.approvalRequired ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-amber-900">
+                <span>
+                  Схема не опубликована автоматически. Создана заявка на согласование №
+                  {result.approvalId}. Ожидает решения администратора.
+                </span>
+                {isAdmin && result.approvalId ? (
+                  <button
+                    className="btn-secondary"
+                    onClick={() =>
+                      navigate(`/admin/schema-approvals?approvalId=${result.approvalId}`)
+                    }
+                  >
+                    Открыть заявку
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
             <div className="mt-4 grid gap-4 md:grid-cols-4">
               <Summary label="Registered" value={String(result.registered)} />
               <Summary label="Old version" value={String(result.oldVersion ?? "-")} />
               <Summary label="Registered version" value={String(result.registeredVersion ?? "-")} />
               <Summary label="Schema Registry ID" value={String(result.schemaRegistryId ?? "-")} />
             </div>
+            {(result.approvalRequired || result.approvalStatus) ? (
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <Summary label="Approval ID" value={String(result.approvalId ?? "-")} />
+                <Summary label="Approval status" value={result.approvalStatus ?? "-"} />
+              </div>
+            ) : null}
           </div>
           {analysis ? (
             <>
@@ -132,6 +163,13 @@ export function PromotionPage() {
       ) : null}
     </div>
   );
+}
+
+function toApiError(error: unknown) {
+  if (error instanceof ApiError) {
+    return error;
+  }
+  return new ApiError("Не удалось выполнить запрос");
 }
 
 function Summary({ label, value }: { label: string; value: ReactNode }) {

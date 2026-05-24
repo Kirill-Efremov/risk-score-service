@@ -2,6 +2,7 @@ package ru.kpfu.itis.efremov.schemarisk.usage.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.kpfu.itis.efremov.schemarisk.auth.service.CurrentUserService;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidUsageOperationException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.ResourceNotFoundException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.SchemaSubjectNotFoundException;
@@ -32,19 +33,23 @@ public class ServiceUsageService {
     private final ServiceUsageRepository serviceUsageRepository;
     private final SchemaCatalog schemaCatalog;
     private final ServiceUsageAuditService auditService;
+    private final CurrentUserService currentUserService;
 
     public ServiceUsageService(
             ServiceUsageRepository serviceUsageRepository,
             SchemaCatalog schemaCatalog,
-            ServiceUsageAuditService auditService
+            ServiceUsageAuditService auditService,
+            CurrentUserService currentUserService
     ) {
         this.serviceUsageRepository = serviceUsageRepository;
         this.schemaCatalog = schemaCatalog;
         this.auditService = auditService;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional
     public ServiceInfo registerService(RegisterServiceCommand command, String createdBy) {
+        String resolvedChangedBy = resolveActor(createdBy);
         ServiceInfo created = serviceUsageRepository.registerService(command);
         auditService.record(auditCommand(
                 created.id(),
@@ -61,7 +66,7 @@ public class ServiceUsageService {
                 null,
                 null,
                 created.active(),
-                createdBy
+                resolvedChangedBy
         ));
         return created;
     }
@@ -84,6 +89,7 @@ public class ServiceUsageService {
             String description,
             String changedBy
     ) {
+        String resolvedChangedBy = resolveActor(changedBy);
         ServiceInfo current = serviceUsageRepository.getServiceById(serviceId);
         String normalizedName = normalizeName(name);
         String normalizedOwner = normalizeOptionalText(owner);
@@ -145,12 +151,12 @@ public class ServiceUsageService {
                 null,
                 current.active(),
                 updated.active(),
-                changedBy
+                resolvedChangedBy
         ));
 
         if (action == ServiceUsageAuditAction.SERVICE_DEACTIVATED) {
             for (ServiceUsageInfo usage : affectedUsages) {
-                auditService.record(usageAuditDeactivated(usage, changedBy, false));
+                auditService.record(usageAuditDeactivated(usage, resolvedChangedBy, false));
             }
         }
 
@@ -159,6 +165,7 @@ public class ServiceUsageService {
 
     @Transactional
     public void deactivateService(Long serviceId) {
+        String resolvedChangedBy = resolveActor(null);
         ServiceInfo current = serviceUsageRepository.getServiceById(serviceId);
         if (!current.active()) {
             return;
@@ -182,16 +189,17 @@ public class ServiceUsageService {
                 null,
                 current.active(),
                 updated.active(),
-                "system"
+                resolvedChangedBy
         ));
 
         for (ServiceUsageInfo usage : affectedUsages) {
-            auditService.record(usageAuditDeactivated(usage, "system", false));
+            auditService.record(usageAuditDeactivated(usage, resolvedChangedBy, false));
         }
     }
 
     @Transactional
     public ServiceUsageInfo registerUsage(RegisterServiceUsageCommand command, String createdBy) {
+        String resolvedChangedBy = resolveActor(createdBy);
         ServiceInfo service = serviceUsageRepository.getServiceById(command.serviceId());
         if (!service.active()) {
             throw new InvalidUsageOperationException("Cannot create usage for inactive service: " + command.serviceId());
@@ -226,7 +234,7 @@ public class ServiceUsageService {
                 created.active(),
                 created.serviceActive(),
                 created.serviceActive(),
-                createdBy
+                resolvedChangedBy
         ));
         return created;
     }
@@ -241,6 +249,7 @@ public class ServiceUsageService {
             Boolean active,
             String changedBy
     ) {
+        String resolvedChangedBy = resolveActor(changedBy);
         ServiceInfo service = serviceUsageRepository.getServiceById(serviceId);
         ServiceUsageInfo current = serviceUsageRepository.getUsageById(usageId);
         if (!current.serviceId().equals(serviceId)) {
@@ -294,13 +303,14 @@ public class ServiceUsageService {
                 updated.active(),
                 current.serviceActive(),
                 updated.serviceActive(),
-                changedBy
+                resolvedChangedBy
         ));
         return updated;
     }
 
     @Transactional
     public void deactivateUsage(Long serviceId, Long usageId) {
+        String resolvedChangedBy = resolveActor(null);
         ServiceUsageInfo current = serviceUsageRepository.getUsageById(usageId);
         if (!current.serviceId().equals(serviceId)) {
             throw new InvalidUsageOperationException("Usage does not belong to service: " + usageId);
@@ -310,11 +320,12 @@ public class ServiceUsageService {
         }
 
         serviceUsageRepository.deactivateUsage(serviceId, usageId, Instant.now());
-        auditService.record(usageAuditDeactivated(current, "system", current.serviceActive()));
+        auditService.record(usageAuditDeactivated(current, resolvedChangedBy, current.serviceActive()));
     }
 
     @Transactional
     public ServiceUsageInfo migrateUsage(Long serviceId, Long usageId, Integer targetVersion, String changedBy) {
+        String resolvedChangedBy = resolveActor(changedBy);
         ServiceInfo service = serviceUsageRepository.getServiceById(serviceId);
         if (!service.active()) {
             throw new InvalidUsageOperationException("Cannot migrate usage for inactive service: " + serviceId);
@@ -350,7 +361,7 @@ public class ServiceUsageService {
                 true,
                 current.serviceActive(),
                 migrated.serviceActive(),
-                changedBy
+                resolvedChangedBy
         ));
         return migrated;
     }
@@ -541,6 +552,11 @@ public class ServiceUsageService {
             return "system";
         }
         return value.trim();
+    }
+
+    private String resolveActor(String fallbackActor) {
+        return currentUserService.currentUsernameOptional()
+                .orElseGet(() -> normalizeChangedBy(fallbackActor));
     }
 
     private String normalizeName(String name) {

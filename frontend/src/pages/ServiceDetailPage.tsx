@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import { ApiError } from "../api/client";
 import { servicesApi } from "../api/servicesApi";
 import { usageApi } from "../api/usageApi";
@@ -41,6 +42,7 @@ const emptyMigrateForm: MigrateServiceUsageRequest = {
 
 export function ServiceDetailPage() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const { serviceId } = useParams();
   const parsedServiceId = Number(serviceId);
   const [service, setService] = useState<ServiceResponse | null>(null);
@@ -309,7 +311,7 @@ export function ServiceDetailPage() {
             <button className="btn-secondary" onClick={() => void loadPage()}>
               Refresh
             </button>
-            {service ? (
+            {isAdmin && service ? (
               <button
                 className="btn-secondary"
                 onClick={() =>
@@ -354,15 +356,17 @@ export function ServiceDetailPage() {
           >
             Usages
           </button>
-          <button
-            className={selectedTab === "history" ? "btn-primary" : "btn-secondary"}
-            onClick={async () => {
-              setSelectedTab("history");
-              await loadAudit();
-            }}
-          >
-            History
-          </button>
+          {isAdmin ? (
+            <button
+              className={selectedTab === "history" ? "btn-primary" : "btn-secondary"}
+              onClick={async () => {
+                setSelectedTab("history");
+                await loadAudit();
+              }}
+            >
+              History
+            </button>
+          ) : null}
         </div>
       </section>
 
@@ -430,30 +434,34 @@ export function ServiceDetailPage() {
                         </td>
                         <td>
                           <div className="flex flex-wrap gap-2">
-                            <button
-                              className="btn-secondary"
-                              onClick={() => startEditingUsage(usage)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn-secondary"
-                              onClick={() => startMigrating(usage)}
-                            >
-                              Migrate
-                            </button>
-                            <button
-                              className="btn-secondary"
-                              onClick={() => void deactivateUsage(usage.id)}
-                            >
-                              Deactivate
-                            </button>
-                            <button
-                              className="btn-secondary"
-                              onClick={() => void loadUsageAudit(usage.id)}
-                            >
-                              Audit
-                            </button>
+                            {isAdmin ? (
+                              <>
+                                <button
+                                  className="btn-secondary"
+                                  onClick={() => startEditingUsage(usage)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="btn-secondary"
+                                  onClick={() => startMigrating(usage)}
+                                >
+                                  Migrate
+                                </button>
+                                <button
+                                  className="btn-secondary"
+                                  onClick={() => void deactivateUsage(usage.id)}
+                                >
+                                  Deactivate
+                                </button>
+                                <button
+                                  className="btn-secondary"
+                                  onClick={() => void loadUsageAudit(usage.id)}
+                                >
+                                  Audit
+                                </button>
+                              </>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -469,55 +477,57 @@ export function ServiceDetailPage() {
               ) : null}
             </div>
 
-            <div className="panel p-6">
-              <h3 className="text-lg font-semibold text-slate-900">Add usage</h3>
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <input
-                  className="field"
-                  value={createUsageForm.subject}
-                  onChange={(event) =>
-                    setCreateUsageForm((current) => ({
-                      ...current,
-                      subject: event.target.value,
-                    }))
-                  }
-                  placeholder="Subject"
-                />
-                <input
-                  className="field"
-                  type="number"
-                  min="1"
-                  value={createUsageForm.version}
-                  onChange={(event) =>
-                    setCreateUsageForm((current) => ({
-                      ...current,
-                      version: Number(event.target.value),
-                    }))
-                  }
-                  placeholder="Version"
-                />
-                <select
-                  className="field"
-                  value={createUsageForm.role}
-                  onChange={(event) =>
-                    setCreateUsageForm((current) => ({
-                      ...current,
-                      role: event.target.value as "PRODUCER" | "CONSUMER",
-                    }))
-                  }
-                >
-                  <option value="CONSUMER">CONSUMER</option>
-                  <option value="PRODUCER">PRODUCER</option>
-                </select>
+            {isAdmin ? (
+              <div className="panel p-6">
+                <h3 className="text-lg font-semibold text-slate-900">Add usage</h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  <input
+                    className="field"
+                    value={createUsageForm.subject}
+                    onChange={(event) =>
+                      setCreateUsageForm((current) => ({
+                        ...current,
+                        subject: event.target.value,
+                      }))
+                    }
+                    placeholder="Subject"
+                  />
+                  <input
+                    className="field"
+                    type="number"
+                    min="1"
+                    value={createUsageForm.version}
+                    onChange={(event) =>
+                      setCreateUsageForm((current) => ({
+                        ...current,
+                        version: Number(event.target.value),
+                      }))
+                    }
+                    placeholder="Version"
+                  />
+                  <select
+                    className="field"
+                    value={createUsageForm.role}
+                    onChange={(event) =>
+                      setCreateUsageForm((current) => ({
+                        ...current,
+                        role: event.target.value as "PRODUCER" | "CONSUMER",
+                      }))
+                    }
+                  >
+                    <option value="CONSUMER">CONSUMER</option>
+                    <option value="PRODUCER">PRODUCER</option>
+                  </select>
+                </div>
+                <button className="btn-primary mt-4" onClick={createUsage}>
+                  Add usage
+                </button>
               </div>
-              <button className="btn-primary mt-4" onClick={createUsage}>
-                Add usage
-              </button>
-            </div>
+            ) : null}
           </section>
 
           <section className="space-y-6">
-            {editingUsageId !== null ? (
+            {isAdmin && editingUsageId !== null ? (
               <div className="panel p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-slate-900">
@@ -591,7 +601,7 @@ export function ServiceDetailPage() {
               </div>
             ) : null}
 
-            {migratingUsageId !== null ? (
+            {isAdmin && migratingUsageId !== null ? (
               <div className="panel p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-slate-900">
@@ -651,9 +661,13 @@ export function ServiceDetailPage() {
           </div>
 
           <div className="mt-5 space-y-4">
-            <ServiceUsageAuditTable records={auditRecords} />
+            {isAdmin ? <ServiceUsageAuditTable records={auditRecords} /> : (
+              <p className="text-sm text-slate-600">
+                История аудита доступна только администраторам.
+              </p>
+            )}
 
-            {selectedUsageAuditId !== null ? (
+            {isAdmin && selectedUsageAuditId !== null ? (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <h4 className="text-base font-semibold text-slate-900">
@@ -683,6 +697,9 @@ export function ServiceDetailPage() {
 
 function toErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.payload) {
+    if (error.payload.status === 403 || error.payload.errorCode === "ACCESS_DENIED") {
+      return "Недостаточно прав для выполнения операции.";
+    }
     return `${error.payload.errorCode}: ${error.payload.message}`;
   }
   return error instanceof Error ? error.message : "Request failed";

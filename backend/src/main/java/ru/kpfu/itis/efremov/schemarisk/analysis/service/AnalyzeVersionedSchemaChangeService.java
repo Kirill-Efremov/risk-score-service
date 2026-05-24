@@ -22,6 +22,7 @@ import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.ParsedSchema;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.SchemaProvider;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.SchemaProviderRegistry;
 import ru.kpfu.itis.efremov.schemarisk.analysis.compatibility.AvroParsedSchema;
+import ru.kpfu.itis.efremov.schemarisk.auth.service.CurrentUserService;
 
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class AnalyzeVersionedSchemaChangeService {
     private final RecommendationService recommendationService;
     private final SchemaProviderRegistry schemaProviderRegistry;
     private final RiskScorer riskScorer;
+    private final CurrentUserService currentUserService;
 
     public AnalyzeVersionedSchemaChangeService(
             VersionedSchemaChangeResolver versionedSchemaChangeResolver,
@@ -47,7 +49,8 @@ public class AnalyzeVersionedSchemaChangeService {
             GovernanceDecisionService governanceDecisionService,
             RecommendationService recommendationService,
             SchemaProviderRegistry schemaProviderRegistry,
-            RiskScorer riskScorer
+            RiskScorer riskScorer,
+            CurrentUserService currentUserService
     ) {
         this.versionedSchemaChangeResolver = versionedSchemaChangeResolver;
         this.schemaAnalysisExecutor = schemaAnalysisExecutor;
@@ -58,9 +61,11 @@ public class AnalyzeVersionedSchemaChangeService {
         this.recommendationService = recommendationService;
         this.schemaProviderRegistry = schemaProviderRegistry;
         this.riskScorer = riskScorer;
+        this.currentUserService = currentUserService;
     }
 
     public SchemaAnalysisResult analyze(AnalyzeVersionedSchemaChangeCommand command) {
+        String resolvedCreatedBy = resolveUsername(command.createdBy());
         ResolvedVersionedSchemaChange resolvedChange = versionedSchemaChangeResolver.resolve(command);
         SchemaAnalysisResult baseResult = schemaAnalysisExecutor.execute(
                 new SchemaAnalysisInput(
@@ -132,7 +137,7 @@ public class AnalyzeVersionedSchemaChangeService {
                         impactGraph,
                         resolvedChange.oldSchema(),
                         resolvedChange.newSchema(),
-                        command.createdBy(),
+                        resolvedCreatedBy,
                         command.promotionAttempted(),
                         null,
                         command.promotionAttempted() ? SchemaPromotionStatus.ANALYSIS_ONLY : null,
@@ -164,6 +169,18 @@ public class AnalyzeVersionedSchemaChangeService {
             return avroParsedSchema.getAvroSchema().getFullName();
         }
         return null;
+    }
+
+    private String resolveUsername(String fallbackUsername) {
+        return currentUserService.currentUsernameOptional()
+                .orElseGet(() -> normalizeFallbackUsername(fallbackUsername));
+    }
+
+    private String normalizeFallbackUsername(String fallbackUsername) {
+        if (fallbackUsername == null || fallbackUsername.isBlank()) {
+            return "system";
+        }
+        return fallbackUsername.trim();
     }
 }
 

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +12,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.kpfu.itis.efremov.schemarisk.approval.exception.ApprovalBaselineChangedException;
+import ru.kpfu.itis.efremov.schemarisk.approval.exception.ApprovalNotAllowedException;
+import ru.kpfu.itis.efremov.schemarisk.approval.exception.InvalidApprovalStateException;
+import ru.kpfu.itis.efremov.schemarisk.approval.exception.SchemaApprovalNotFoundException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.AuthenticationRequiredException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.InvalidCredentialsException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.LastAdminCannotBeDisabledException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.SelfDeactivationNotAllowedException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.UserAlreadyExistsException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.UserDisabledException;
+import ru.kpfu.itis.efremov.schemarisk.auth.exception.UserNotFoundException;
 import ru.kpfu.itis.efremov.schemarisk.catalog.exception.SchemaRegistryConflictException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidRequestException;
 import ru.kpfu.itis.efremov.schemarisk.common.exception.InvalidSchemaException;
@@ -277,6 +289,21 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(SchemaApprovalNotFoundException.class)
+    public ApiErrorResponse handleSchemaApprovalNotFound(
+            SchemaApprovalNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "SCHEMA_APPROVAL_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(SchemaRegistryConflictException.class)
     public ApiErrorResponse handleSchemaRegistryConflict(
@@ -287,6 +314,148 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT,
                 "SCHEMA_REGISTRY_CONFLICT",
                 "Schema Registry rejected schema registration: " + exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidApprovalStateException.class)
+    public ApiErrorResponse handleInvalidApprovalState(
+            InvalidApprovalStateException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "INVALID_APPROVAL_STATE",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ApprovalNotAllowedException.class)
+    public ApiErrorResponse handleApprovalNotAllowed(
+            ApprovalNotAllowedException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "APPROVAL_NOT_ALLOWED",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ApprovalBaselineChangedException.class)
+    public ApiErrorResponse handleApprovalBaselineChanged(
+            ApprovalBaselineChangedException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.CONFLICT,
+                "APPROVAL_BASELINE_CHANGED",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ApiErrorResponse handleUserAlreadyExists(
+            UserAlreadyExistsException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.CONFLICT,
+                "USER_ALREADY_EXISTS",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ApiErrorResponse handleUserNotFound(
+            UserNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.NOT_FOUND,
+                "USER_NOT_FOUND",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(SelfDeactivationNotAllowedException.class)
+    public ApiErrorResponse handleSelfDeactivationNotAllowed(
+            SelfDeactivationNotAllowedException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "SELF_DEACTIVATION_NOT_ALLOWED",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(LastAdminCannotBeDisabledException.class)
+    public ApiErrorResponse handleLastAdminCannotBeDisabled(
+            LastAdminCannotBeDisabledException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                "LAST_ADMIN_CANNOT_BE_DISABLED",
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler({InvalidCredentialsException.class, UserDisabledException.class, AuthenticationRequiredException.class})
+    public ApiErrorResponse handleAuthenticationFailure(
+            RuntimeException exception,
+            HttpServletRequest request
+    ) {
+        String errorCode = "AUTHENTICATION_REQUIRED";
+        if (exception instanceof InvalidCredentialsException) {
+            errorCode = "INVALID_CREDENTIALS";
+        } else if (exception instanceof UserDisabledException) {
+            errorCode = "USER_DISABLED";
+        }
+
+        return buildError(
+                HttpStatus.UNAUTHORIZED,
+                errorCode,
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ApiErrorResponse handleAccessDenied(
+            AccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.FORBIDDEN,
+                "ACCESS_DENIED",
+                "Access is denied",
                 request,
                 List.of()
         );

@@ -17,6 +17,9 @@ export interface SchemaPromotionResponse {
   schemaRegistryId?: number | null;
   registrationStatus: SchemaPromotionStatus;
   registrationMessage: string;
+  approvalRequired: boolean;
+  approvalId?: number | null;
+  approvalStatus?: string | null;
   analysis?: SchemaAnalysisResponse | null;
   oldSchemaText?: string | null;
   newSchemaText?: string | null;

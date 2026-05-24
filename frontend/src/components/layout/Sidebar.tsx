@@ -4,10 +4,13 @@ import {
   GitCompareArrows,
   Send,
   Settings,
+  ShieldAlert,
   ShieldCheck,
+  Users,
   Waypoints,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
 
 const links = [
   { to: "/versioned-analysis", label: "Versioned Analysis", icon: ShieldCheck },
@@ -20,6 +23,12 @@ const links = [
 ];
 
 export function Sidebar() {
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <aside className="flex w-full shrink-0 self-start rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-panel backdrop-blur lg:sticky lg:top-6 lg:w-[260px]">
       <div className="w-full">
@@ -71,6 +80,42 @@ export function Sidebar() {
             </NavLink>
           ))}
         </nav>
+
+        {isAdmin ? (
+          <div className="mt-6">
+            <p className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
+              Администрирование
+            </p>
+            <div className="mt-3 flex flex-col gap-3">
+              <NavLink
+                to="/admin/users"
+                className={({ isActive }) =>
+                  `flex items-center gap-4 rounded-2xl px-4 py-3 text-[15px] font-medium transition ${
+                    isActive
+                      ? "bg-violet-700 text-white shadow-lg"
+                      : "text-violet-700 hover:bg-violet-50"
+                  }`
+                }
+              >
+                <Users size={20} className="shrink-0" />
+                <span>Пользователи</span>
+              </NavLink>
+              <NavLink
+                to="/admin/schema-approvals"
+                className={({ isActive }) =>
+                  `flex items-center gap-4 rounded-2xl px-4 py-3 text-[15px] font-medium transition ${
+                    isActive
+                      ? "bg-violet-700 text-white shadow-lg"
+                      : "text-violet-700 hover:bg-violet-50"
+                  }`
+                }
+              >
+                <ShieldAlert size={20} className="shrink-0" />
+                <span>Согласование схем</span>
+              </NavLink>
+            </div>
+          </div>
+        ) : null}
       </div>
     </aside>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import { ApiError } from "../api/client";
 import { servicesApi } from "../api/servicesApi";
 import { ActiveBadge } from "../components/common/ActiveBadge";
@@ -31,6 +32,7 @@ const emptyEditForm: UpdateServiceRequest = {
 
 export function ServicesPage() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [services, setServices] = useState<ServiceResponse[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -234,22 +236,26 @@ export function ServicesPage() {
                           >
                             Open
                           </button>
-                          <button
-                            className="btn-secondary"
-                            onClick={() => startEditing(service)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="btn-secondary"
-                            onClick={() =>
-                              service.active
-                                ? void deactivateService(service.id)
-                                : void activateService(service)
-                            }
-                          >
-                            {service.active ? "Deactivate" : "Activate"}
-                          </button>
+                          {isAdmin ? (
+                            <>
+                              <button
+                                className="btn-secondary"
+                                onClick={() => startEditing(service)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="btn-secondary"
+                                onClick={() =>
+                                  service.active
+                                    ? void deactivateService(service.id)
+                                    : void activateService(service)
+                                }
+                              >
+                                {service.active ? "Deactivate" : "Activate"}
+                              </button>
+                            </>
+                          ) : null}
                         </div>
                       </td>
                     </tr>
@@ -264,93 +270,18 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section className="space-y-6">
-          <div className="panel p-6">
-            <h3 className="text-lg font-semibold text-slate-900">
-              Create service
-            </h3>
-            <div className="mt-4 grid gap-4">
-              <input
-                className="field"
-                value={createForm.name}
-                onChange={(event) =>
-                  setCreateForm((current) => ({
-                    ...current,
-                    name: event.target.value,
-                  }))
-                }
-                placeholder="Service name"
-              />
-              <input
-                className="field"
-                value={createForm.owner ?? ""}
-                onChange={(event) =>
-                  setCreateForm((current) => ({
-                    ...current,
-                    owner: event.target.value,
-                  }))
-                }
-                placeholder="Owner"
-              />
-              <textarea
-                className="field min-h-[110px]"
-                value={createForm.description ?? ""}
-                onChange={(event) =>
-                  setCreateForm((current) => ({
-                    ...current,
-                    description: event.target.value,
-                  }))
-                }
-                placeholder="Description"
-              />
-              <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={createForm.critical}
-                  onChange={(event) =>
-                    setCreateForm((current) => ({
-                      ...current,
-                      critical: event.target.checked,
-                    }))
-                  }
-                />
-                Critical service
-              </label>
-              <button className="btn-primary" onClick={createService}>
-                Create service
-              </button>
-            </div>
-          </div>
-
-          <div className="panel p-6">
-            <div className="flex items-center justify-between">
+        {isAdmin ? (
+          <section className="space-y-6">
+            <div className="panel p-6">
               <h3 className="text-lg font-semibold text-slate-900">
-                Edit service
+                Create service
               </h3>
-              {editingServiceId !== null ? (
-                <button
-                  className="btn-secondary"
-                  onClick={() => {
-                    setEditingServiceId(null);
-                    setEditForm(emptyEditForm);
-                  }}
-                >
-                  Clear
-                </button>
-              ) : null}
-            </div>
-
-            {editingServiceId === null ? (
-              <p className="mt-4 text-sm text-slate-500">
-                Select a service from the table to update it here.
-              </p>
-            ) : (
               <div className="mt-4 grid gap-4">
                 <input
                   className="field"
-                  value={editForm.name ?? ""}
+                  value={createForm.name}
                   onChange={(event) =>
-                    setEditForm((current) => ({
+                    setCreateForm((current) => ({
                       ...current,
                       name: event.target.value,
                     }))
@@ -359,9 +290,9 @@ export function ServicesPage() {
                 />
                 <input
                   className="field"
-                  value={editForm.owner ?? ""}
+                  value={createForm.owner ?? ""}
                   onChange={(event) =>
-                    setEditForm((current) => ({
+                    setCreateForm((current) => ({
                       ...current,
                       owner: event.target.value,
                     }))
@@ -370,9 +301,9 @@ export function ServicesPage() {
                 />
                 <textarea
                   className="field min-h-[110px]"
-                  value={editForm.description ?? ""}
+                  value={createForm.description ?? ""}
                   onChange={(event) =>
-                    setEditForm((current) => ({
+                    setCreateForm((current) => ({
                       ...current,
                       description: event.target.value,
                     }))
@@ -382,9 +313,9 @@ export function ServicesPage() {
                 <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700">
                   <input
                     type="checkbox"
-                    checked={Boolean(editForm.critical)}
+                    checked={createForm.critical}
                     onChange={(event) =>
-                      setEditForm((current) => ({
+                      setCreateForm((current) => ({
                         ...current,
                         critical: event.target.checked,
                       }))
@@ -392,26 +323,112 @@ export function ServicesPage() {
                   />
                   Critical service
                 </label>
-                <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700">
+                <button className="btn-primary" onClick={createService}>
+                  Create service
+                </button>
+              </div>
+            </div>
+
+            <div className="panel p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Edit service
+                </h3>
+                {editingServiceId !== null ? (
+                  <button
+                    className="btn-secondary"
+                    onClick={() => {
+                      setEditingServiceId(null);
+                      setEditForm(emptyEditForm);
+                    }}
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+
+              {editingServiceId === null ? (
+                <p className="mt-4 text-sm text-slate-500">
+                  Select a service from the table to update it here.
+                </p>
+              ) : (
+                <div className="mt-4 grid gap-4">
                   <input
-                    type="checkbox"
-                    checked={Boolean(editForm.active)}
+                    className="field"
+                    value={editForm.name ?? ""}
                     onChange={(event) =>
                       setEditForm((current) => ({
                         ...current,
-                        active: event.target.checked,
+                        name: event.target.value,
                       }))
                     }
+                    placeholder="Service name"
                   />
-                  Active
-                </label>
-                <button className="btn-primary" onClick={saveService}>
-                  Save changes
-                </button>
-              </div>
-            )}
-          </div>
-        </section>
+                  <input
+                    className="field"
+                    value={editForm.owner ?? ""}
+                    onChange={(event) =>
+                      setEditForm((current) => ({
+                        ...current,
+                        owner: event.target.value,
+                      }))
+                    }
+                    placeholder="Owner"
+                  />
+                  <textarea
+                    className="field min-h-[110px]"
+                    value={editForm.description ?? ""}
+                    onChange={(event) =>
+                      setEditForm((current) => ({
+                        ...current,
+                        description: event.target.value,
+                      }))
+                    }
+                    placeholder="Description"
+                  />
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editForm.critical)}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          critical: event.target.checked,
+                        }))
+                      }
+                    />
+                    Critical service
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editForm.active)}
+                      onChange={(event) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          active: event.target.checked,
+                        }))
+                      }
+                    />
+                    Active
+                  </label>
+                  <button className="btn-primary" onClick={saveService}>
+                    Save changes
+                  </button>
+                </div>
+              )}
+            </div>
+          </section>
+        ) : (
+          <section className="panel p-6">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Service management
+            </h3>
+            <p className="mt-3 text-sm text-slate-600">
+              Создание и изменение сервисов доступно только администраторам.
+            </p>
+          </section>
+        )}
       </div>
     </div>
   );
@@ -419,6 +436,9 @@ export function ServicesPage() {
 
 function toErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.payload) {
+    if (error.payload.status === 403 || error.payload.errorCode === "ACCESS_DENIED") {
+      return "Недостаточно прав для выполнения операции.";
+    }
     return `${error.payload.errorCode}: ${error.payload.message}`;
   }
   return error instanceof Error ? error.message : "Request failed";

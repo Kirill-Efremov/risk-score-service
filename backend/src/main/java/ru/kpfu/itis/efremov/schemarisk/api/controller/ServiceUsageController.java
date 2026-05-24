@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,6 +63,7 @@ public class ServiceUsageController {
             @ApiResponse(responseCode = "500", description = "Unexpected server error",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponse> registerService(@Valid @RequestBody CreateServiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ServiceResponse.fromInfo(
@@ -101,6 +103,7 @@ public class ServiceUsageController {
 
     @PatchMapping("/services/{serviceId}")
     @Operation(summary = "Partially update a service")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponse> updateService(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
             @RequestBody UpdateServiceRequest request
@@ -122,6 +125,7 @@ public class ServiceUsageController {
 
     @DeleteMapping("/services/{serviceId}")
     @Operation(summary = "Deactivate a service")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deactivateService(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId
     ) {
@@ -131,6 +135,7 @@ public class ServiceUsageController {
 
     @PostMapping("/services/{serviceId}/usages")
     @Operation(summary = "Create a usage link for a service")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceUsageResponse> registerUsage(
             @Parameter(description = "Service ID", example = "10")
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
@@ -169,6 +174,7 @@ public class ServiceUsageController {
 
     @PatchMapping("/services/{serviceId}/usages/{usageId}")
     @Operation(summary = "Partially update a usage link")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceUsageResponse> updateUsage(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
             @PathVariable @Positive(message = "usageId must be positive") Long usageId,
@@ -191,6 +197,7 @@ public class ServiceUsageController {
 
     @DeleteMapping("/services/{serviceId}/usages/{usageId}")
     @Operation(summary = "Deactivate a usage link")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deactivateUsage(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
             @PathVariable @Positive(message = "usageId must be positive") Long usageId
@@ -201,6 +208,7 @@ public class ServiceUsageController {
 
     @PostMapping("/services/{serviceId}/usages/{usageId}/migrate")
     @Operation(summary = "Migrate a usage link to another schema version")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceUsageResponse> migrateUsage(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
             @PathVariable @Positive(message = "usageId must be positive") Long usageId,
@@ -233,6 +241,7 @@ public class ServiceUsageController {
 
     @PatchMapping("/services/usages/{usageId}/status")
     @Operation(summary = "Update the lifecycle status of a usage")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceUsageResponse> updateUsageStatus(
             @Parameter(description = "Usage ID", example = "101")
             @PathVariable @Positive(message = "usageId must be positive") Long usageId,

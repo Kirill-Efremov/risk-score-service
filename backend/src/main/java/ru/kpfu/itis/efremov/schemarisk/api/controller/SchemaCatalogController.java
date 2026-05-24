@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,6 +78,7 @@ public class SchemaCatalogController {
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     })
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SchemaVersionResponse> registerVersion(
             @Parameter(description = "Имя subject", example = "user-created")
             @PathVariable @NotBlank(message = "subject must not be blank") String subject,

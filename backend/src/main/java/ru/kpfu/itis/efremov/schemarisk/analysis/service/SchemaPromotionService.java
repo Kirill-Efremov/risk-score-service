@@ -2,6 +2,9 @@ package ru.kpfu.itis.efremov.schemarisk.analysis.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
+import ru.kpfu.itis.efremov.schemarisk.approval.dto.SchemaApprovalResponse;
+import ru.kpfu.itis.efremov.schemarisk.approval.service.SchemaApprovalService;
+import ru.kpfu.itis.efremov.schemarisk.auth.service.CurrentUserService;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.GovernanceDecision;
 import ru.kpfu.itis.efremov.schemarisk.analysis.governance.SchemaPromotionStatus;
 import ru.kpfu.itis.efremov.schemarisk.analysis.model.AnalyzeVersionedSchemaChangeCommand;
@@ -28,20 +31,27 @@ public class SchemaPromotionService {
     private final AnalyzeVersionedSchemaChangeService analyzeVersionedSchemaChangeService;
     private final RegisterSchemaVersionService registerSchemaVersionService;
     private final AnalysisRepository analysisRepository;
+    private final CurrentUserService currentUserService;
+    private final SchemaApprovalService schemaApprovalService;
 
     public SchemaPromotionService(
             SchemaCatalog schemaCatalog,
             AnalyzeVersionedSchemaChangeService analyzeVersionedSchemaChangeService,
             RegisterSchemaVersionService registerSchemaVersionService,
-            AnalysisRepository analysisRepository
+            AnalysisRepository analysisRepository,
+            CurrentUserService currentUserService,
+            SchemaApprovalService schemaApprovalService
     ) {
         this.schemaCatalog = schemaCatalog;
         this.analyzeVersionedSchemaChangeService = analyzeVersionedSchemaChangeService;
         this.registerSchemaVersionService = registerSchemaVersionService;
         this.analysisRepository = analysisRepository;
+        this.currentUserService = currentUserService;
+        this.schemaApprovalService = schemaApprovalService;
     }
 
     public SchemaPromotionResponse promote(String subject, SchemaPromotionRequest request) {
+        String resolvedUser = resolveUsername(request.getCreatedBy());
         SchemaVersionInfo latestVersion = findLatestVersion(subject);
         if (latestVersion == null) {
             return registerFirstVersion(subject, request);
@@ -55,13 +65,80 @@ public class SchemaPromotionService {
                         request.getSchemaText(),
                         request.getSchemaType(),
                         request.getCompatibilityMode(),
-                        request.getCreatedBy(),
+                        resolvedUser,
                         true
                 )
         );
 
         GovernanceDecision governanceDecision = analysisResult.governanceDecision();
         SchemaPromotionStatus promotionStatus = resolvePromotionStatus(governanceDecision);
+        if (governanceDecision == GovernanceDecision.ALLOW_WITH_CAUTION
+                && analysisResult.compatibilityResult() != null
+                && analysisResult.compatibilityResult().isCompatible()) {
+            SchemaApprovalResponse approval = schemaApprovalService.createPendingApproval(
+                    subject,
+                    request.getSchemaType().name(),
+                    resolveCompatibilityMode(request),
+                    latestVersion.version(),
+                    request.getSchemaText(),
+                    analysisResult.analysisId(),
+                    true,
+                    governanceDecision.name(),
+                    analysisResult.riskResult().getRiskScore(),
+                    analysisResult.riskResult().getRiskLevel().name(),
+                    resolvedUser
+            );
+            updatePromotionMetadata(
+                    analysisResult,
+                    false,
+                    SchemaPromotionStatus.REQUIRES_MANUAL_APPROVAL,
+                    null,
+                    null
+            );
+            return new SchemaPromotionResponse(
+                    subject,
+                    false,
+                    latestVersion.version(),
+                    null,
+                    null,
+                    SchemaPromotionStatus.REQUIRES_MANUAL_APPROVAL,
+                    "Schema requires admin approval before publication",
+                    true,
+                    approval.id(),
+                    approval.status().name(),
+                    SchemaAnalysisResponse.fromResult(analysisResult),
+                    latestVersion.schemaText(),
+                    request.getSchemaText()
+            );
+        }
+
+        if (governanceDecision == GovernanceDecision.ALLOW_WITH_CAUTION
+                && analysisResult.compatibilityResult() != null
+                && !analysisResult.compatibilityResult().isCompatible()) {
+            updatePromotionMetadata(
+                    analysisResult,
+                    false,
+                    SchemaPromotionStatus.BLOCKED_BY_GOVERNANCE,
+                    null,
+                    null
+            );
+            return new SchemaPromotionResponse(
+                    subject,
+                    false,
+                    latestVersion.version(),
+                    null,
+                    null,
+                    SchemaPromotionStatus.BLOCKED_BY_GOVERNANCE,
+                    "Schema was not registered because the change is not formally compatible",
+                    false,
+                    null,
+                    null,
+                    SchemaAnalysisResponse.fromResult(analysisResult),
+                    latestVersion.schemaText(),
+                    request.getSchemaText()
+            );
+        }
+
         if (promotionStatus != SchemaPromotionStatus.REGISTERED) {
             updatePromotionMetadata(
                     analysisResult,
@@ -78,6 +155,9 @@ public class SchemaPromotionService {
                     null,
                     promotionStatus,
                     buildBlockedMessage(governanceDecision),
+                    false,
+                    null,
+                    null,
                     SchemaAnalysisResponse.fromResult(analysisResult),
                     latestVersion.schemaText(),
                     request.getSchemaText()
@@ -114,6 +194,9 @@ public class SchemaPromotionService {
                     parseRegistryId(registeredVersion.externalSchemaId()),
                     SchemaPromotionStatus.REGISTERED,
                     "Schema was registered in Schema Registry",
+                    false,
+                    null,
+                    null,
                     SchemaAnalysisResponse.fromResult(analysisResult),
                     latestVersion.schemaText(),
                     request.getSchemaText()
@@ -134,6 +217,9 @@ public class SchemaPromotionService {
                     null,
                     SchemaPromotionStatus.REGISTRY_REJECTED,
                     buildRegistryRejectedMessage(exception),
+                    false,
+                    null,
+                    null,
                     SchemaAnalysisResponse.fromResult(analysisResult),
                     latestVersion.schemaText(),
                     request.getSchemaText()
@@ -154,6 +240,9 @@ public class SchemaPromotionService {
                     null,
                     SchemaPromotionStatus.REGISTRY_REJECTED,
                     buildRegistryRejectedMessage(exception),
+                    false,
+                    null,
+                    null,
                     SchemaAnalysisResponse.fromResult(analysisResult),
                     latestVersion.schemaText(),
                     request.getSchemaText()
@@ -193,6 +282,9 @@ public class SchemaPromotionService {
                     parseRegistryId(registeredVersion.externalSchemaId()),
                     SchemaPromotionStatus.REGISTERED,
                     "Schema was registered in Schema Registry as the first version",
+                    false,
+                    null,
+                    null,
                     null,
                     null,
                     request.getSchemaText()
@@ -206,6 +298,9 @@ public class SchemaPromotionService {
                     null,
                     SchemaPromotionStatus.REGISTRY_REJECTED,
                     buildRegistryRejectedMessage(exception),
+                    false,
+                    null,
+                    null,
                     null,
                     null,
                     request.getSchemaText()
@@ -219,6 +314,9 @@ public class SchemaPromotionService {
                     null,
                     SchemaPromotionStatus.REGISTRY_REJECTED,
                     buildRegistryRejectedMessage(exception),
+                    false,
+                    null,
+                    null,
                     null,
                     null,
                     request.getSchemaText()
@@ -302,5 +400,24 @@ public class SchemaPromotionService {
         } catch (NumberFormatException exception) {
             return null;
         }
+    }
+
+    private String resolveUsername(String fallbackUsername) {
+        return currentUserService.currentUsernameOptional()
+                .orElseGet(() -> normalizeFallbackUsername(fallbackUsername));
+    }
+
+    private String resolveCompatibilityMode(SchemaPromotionRequest request) {
+        if (request.getCompatibilityMode() == null) {
+            return CompatibilityMode.BACKWARD.name();
+        }
+        return request.getCompatibilityMode().name();
+    }
+
+    private String normalizeFallbackUsername(String fallbackUsername) {
+        if (fallbackUsername == null || fallbackUsername.isBlank()) {
+            return "system";
+        }
+        return fallbackUsername.trim();
     }
 }

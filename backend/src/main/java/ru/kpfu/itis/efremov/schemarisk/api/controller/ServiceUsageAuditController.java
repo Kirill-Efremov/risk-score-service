@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class ServiceUsageAuditController {
 
     @GetMapping("/services/{serviceId}/audit")
     @Operation(summary = "Get audit history for a service")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ServiceUsageAuditResponse>> getServiceAudit(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
             @RequestParam(required = false) ServiceUsageAuditAction action,
@@ -47,6 +49,7 @@ public class ServiceUsageAuditController {
 
     @GetMapping("/services/{serviceId}/usages/{usageId}/audit")
     @Operation(summary = "Get audit history for a usage link")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ServiceUsageAuditResponse>> getUsageAudit(
             @PathVariable @Positive(message = "serviceId must be positive") Long serviceId,
             @PathVariable @Positive(message = "usageId must be positive") Long usageId,
@@ -61,6 +64,7 @@ public class ServiceUsageAuditController {
 
     @GetMapping("/usage-audit")
     @Operation(summary = "Get global usage audit log")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ServiceUsageAuditResponse>> getUsageAuditLog(
             @RequestParam(required = false) Long serviceId,
             @RequestParam(required = false) Long usageId,

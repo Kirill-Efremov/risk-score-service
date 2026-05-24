@@ -26,14 +26,14 @@ public class WebCorsConfiguration implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin");
         registry.addMapping("/v3/api-docs/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin");
         registry.addMapping("/swagger-ui/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin");
     }
 }
