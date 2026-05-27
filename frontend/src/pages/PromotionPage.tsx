@@ -28,11 +28,15 @@ const draftSchema = `{
   ]
 }`;
 
+const schemaTypes = ["AVRO", "JSON_SCHEMA", "PROTOBUF"];
+
 export function PromotionPage() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [subject, setSubject] = useState("payment-created");
   const [schemaText, setSchemaText] = useState(draftSchema);
+  const [schemaType, setSchemaType] = useState("AVRO");
+  const [compatibilityMode, setCompatibilityMode] = useState("BACKWARD");
   const [description, setDescription] = useState("Frontend controlled promotion");
   const [result, setResult] = useState<SchemaPromotionResponse | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
@@ -44,8 +48,8 @@ export function PromotionPage() {
     try {
       setResult(
         await promotionApi.promoteSchema(subject, {
-          schemaType: "AVRO",
-          compatibilityMode: "BACKWARD",
+          schemaType,
+          compatibilityMode,
           description,
           schemaText,
         }),
@@ -65,10 +69,24 @@ export function PromotionPage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <input className="field" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="subject" />
           <input className="field" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="description" />
-          <select className="field" defaultValue="BACKWARD">
+          <select className="field" value={schemaType} onChange={(e) => setSchemaType(e.target.value)}>
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          <select className="field" value={compatibilityMode} onChange={(e) => setCompatibilityMode(e.target.value)}>
             <option>BACKWARD</option>
+            <option>FORWARD</option>
+            <option>FULL</option>
           </select>
         </div>
+        {schemaType !== "AVRO" ? (
+          <p className="mt-3 text-sm text-slate-500">
+            JSON Schema and Protobuf use enhanced project-level analysis before promotion.
+          </p>
+        ) : null}
       </div>
       <SchemaEditor title="Candidate schema" value={schemaText} onChange={setSchemaText} exampleValue={draftSchema} />
       <div className="flex gap-3">

@@ -104,10 +104,20 @@ public class ConfluentSchemaCatalog implements SchemaCatalog {
     }
 
     private SchemaSubjectInfo resolveSubjectInfo(String subject, Integer latestSchemaId) {
+        SchemaType schemaType = SchemaType.AVRO;
+        try {
+            var latestVersion = client.getLatestVersion(subject);
+            schemaType = fromConfluentSchemaType(latestVersion.schemaType());
+            if (latestSchemaId == null) {
+                latestSchemaId = latestVersion.id();
+            }
+        } catch (RuntimeException ignored) {
+            // Keep AVRO fallback for older registry responses without schemaType.
+        }
         CompatibilityMode compatibilityMode = resolveCompatibilityMode(client.getSubjectConfig(subject));
         return new SchemaSubjectInfo(
                 subject,
-                SchemaType.AVRO,
+                schemaType,
                 compatibilityMode,
                 null,
                 SchemaSourceType.CONFLUENT,
@@ -115,6 +125,17 @@ public class ConfluentSchemaCatalog implements SchemaCatalog {
                 latestSchemaId != null ? String.valueOf(latestSchemaId) : null,
                 null
         );
+    }
+
+    private SchemaType fromConfluentSchemaType(String schemaType) {
+        if (schemaType == null || schemaType.isBlank()) {
+            return SchemaType.AVRO;
+        }
+        return switch (schemaType.trim().toUpperCase()) {
+            case "JSON" -> SchemaType.JSON_SCHEMA;
+            case "PROTOBUF" -> SchemaType.PROTOBUF;
+            default -> SchemaType.AVRO;
+        };
     }
 
     private SchemaVersionInfo toVersionInfo(

@@ -20,6 +20,9 @@ public class SchemaProviderRegistry {
     }
 
     public SchemaProvider getProvider(SchemaType type) {
+        if (type == null) {
+            throw new UnsupportedSchemaTypeException("Schema type must be provided");
+        }
         SchemaProvider provider = providers.get(type);
         if (provider == null) {
             throw new UnsupportedSchemaTypeException("No schema provider registered for type: " + type);

@@ -121,6 +121,34 @@ public class RecommendationService {
                     "Field '" + change.getFieldName()
                             + "' became required. Add a default or keep it optional for backward compatibility."
             );
+            case ENUM_RESTRICTED -> List.of(
+                    "Enum values for '" + change.getFieldName()
+                            + "' were restricted. Verify old producers never emit removed values."
+            );
+            case ADDITIONAL_PROPERTIES_DISABLED -> List.of(
+                    "additionalProperties was disabled for '" + change.getFieldName()
+                            + "'. Verify producers do not send undeclared JSON fields."
+            );
+            case STRING_CONSTRAINT_TIGHTENED, NUMERIC_CONSTRAINT_TIGHTENED, ARRAY_CONSTRAINT_CHANGED -> List.of(
+                    "Validation constraints changed for '" + change.getFieldName()
+                            + "'. Check existing payloads against the stricter schema."
+            );
+            case FIELD_NUMBER_REUSED, WIRE_TYPE_CHANGED -> List.of(
+                    "Protobuf field number or wire type changed at '" + change.getFieldName()
+                            + "'. Add a new field number instead of reusing the existing one."
+            );
+            case FIELD_REMOVED_WITHOUT_RESERVED -> List.of(
+                    "Protobuf field '" + change.getFieldName()
+                            + "' was removed without reserving its number. Reserve removed numbers to prevent unsafe reuse."
+            );
+            case FIELD_MOVED_TO_ONEOF, FIELD_REMOVED_FROM_ONEOF, ONEOF_REMOVED -> List.of(
+                    "Protobuf oneof changed around '" + change.getFieldName()
+                            + "'. Review wire compatibility and rollout carefully."
+            );
+            case ENUM_VALUE_NUMBER_REUSED, ENUM_VALUE_REMOVED -> List.of(
+                    "Protobuf enum changed at '" + change.getFieldName()
+                            + "'. Do not reuse enum numeric values for different meanings."
+            );
             case OPTIONAL_ADDED, ADDED -> List.of(
                     "Field '" + change.getFieldName()
                             + "' was added. Verify that its default and semantics are safe for existing consumers."
@@ -145,7 +173,11 @@ public class RecommendationService {
                     "Nested record field '" + change.getFieldName()
                             + "' changed internally. Review compatibility of the nested contract."
             );
-            case OTHER -> List.of();
+            case CONST_CHANGED, COMPOSITION_CHANGED, FIELD_LABEL_CHANGED, MAP_TYPE_CHANGED,
+                    FIELD_NAME_CHANGED, RESERVED_NUMBER_ADDED, RESERVED_NUMBER_REMOVED,
+                    ONEOF_ADDED, ENUM_EXPANDED, ADDITIONAL_PROPERTIES_ENABLED,
+                    STRING_CONSTRAINT_RELAXED, NUMERIC_CONSTRAINT_RELAXED,
+                    ENUM_VALUE_ADDED, ENUM_VALUE_NAME_CHANGED, OTHER -> List.of();
         };
     }
 
@@ -179,6 +211,63 @@ public class RecommendationService {
                     fieldName,
                     "Optional field '" + fieldName + "' became required",
                     "Keep the field optional during migration or ensure all producers and consumers support the new requirement"
+            );
+            case ENUM_RESTRICTED -> new StructuredRecommendation(
+                    "JSON_ENUM_RESTRICTED_REVIEW",
+                    RecommendationSeverity.HIGH,
+                    fieldName,
+                    "JSON Schema enum values for '" + fieldName + "' were restricted",
+                    "Do not remove enum values while old producers may still emit them"
+            );
+            case ADDITIONAL_PROPERTIES_DISABLED -> new StructuredRecommendation(
+                    "JSON_ADDITIONAL_PROPERTIES_DISABLED_REVIEW",
+                    RecommendationSeverity.MEDIUM,
+                    fieldName,
+                    "JSON Schema additionalProperties was disabled for '" + fieldName + "'",
+                    "Verify that producers do not send additional fields before disabling additionalProperties"
+            );
+            case STRING_CONSTRAINT_TIGHTENED, NUMERIC_CONSTRAINT_TIGHTENED, ARRAY_CONSTRAINT_CHANGED ->
+                    new StructuredRecommendation(
+                            "JSON_CONSTRAINT_TIGHTENED_REVIEW",
+                            RecommendationSeverity.MEDIUM,
+                            fieldName,
+                            "JSON Schema validation constraints were tightened for '" + fieldName + "'",
+                            "Verify existing payloads satisfy stricter validation constraints"
+                    );
+            case FIELD_REMOVED_WITHOUT_RESERVED -> new StructuredRecommendation(
+                    "PROTO_RESERVE_REMOVED_FIELD_NUMBER",
+                    RecommendationSeverity.HIGH,
+                    fieldName,
+                    "Protobuf field '" + fieldName + "' was removed without reserved number",
+                    "Reserve removed field numbers to prevent unsafe reuse"
+            );
+            case FIELD_NUMBER_REUSED, WIRE_TYPE_CHANGED -> new StructuredRecommendation(
+                    "PROTO_DO_NOT_REUSE_FIELD_NUMBERS",
+                    RecommendationSeverity.HIGH,
+                    fieldName,
+                    "Protobuf field number was reused or wire type changed at '" + fieldName + "'",
+                    "Do not reuse existing field numbers for different fields. Add a new field number instead"
+            );
+            case FIELD_LABEL_CHANGED, MAP_TYPE_CHANGED -> new StructuredRecommendation(
+                    "PROTO_FIELD_TYPE_CHANGED_REVIEW",
+                    RecommendationSeverity.HIGH,
+                    fieldName,
+                    "Protobuf field semantics changed at '" + fieldName + "'",
+                    "Avoid changing field type or label. Add a new field number instead"
+            );
+            case FIELD_MOVED_TO_ONEOF, FIELD_REMOVED_FROM_ONEOF, ONEOF_REMOVED -> new StructuredRecommendation(
+                    "PROTO_ONEOF_CHANGE_REVIEW",
+                    RecommendationSeverity.HIGH,
+                    fieldName,
+                    "Protobuf oneof changed at '" + fieldName + "'",
+                    "Carefully review oneof changes because they may affect wire compatibility"
+            );
+            case ENUM_VALUE_NUMBER_REUSED, ENUM_VALUE_REMOVED -> new StructuredRecommendation(
+                    "PROTO_ENUM_NUMBER_REUSE_REVIEW",
+                    RecommendationSeverity.HIGH,
+                    fieldName,
+                    "Protobuf enum changed at '" + fieldName + "'",
+                    "Do not reuse enum numeric values for different meanings"
             );
             case REQUIRED_BECAME_OPTIONAL -> new StructuredRecommendation(
                     "REQUIRED_FIELD_BECAME_OPTIONAL_REVIEW_CONSUMERS",
@@ -230,6 +319,16 @@ public class RecommendationService {
                     "This usually improves backward compatibility. Verify that the default value matches business expectations"
             );
             case OTHER -> new StructuredRecommendation(
+                    "SCHEMA_CHANGE_REVIEW_REQUIRED",
+                    RecommendationSeverity.MEDIUM,
+                    fieldName,
+                    "Field '" + fieldName + "' changed",
+                    "Review the schema change manually"
+            );
+            case ENUM_EXPANDED, ADDITIONAL_PROPERTIES_ENABLED, STRING_CONSTRAINT_RELAXED,
+                    NUMERIC_CONSTRAINT_RELAXED, CONST_CHANGED, COMPOSITION_CHANGED,
+                    FIELD_NAME_CHANGED, RESERVED_NUMBER_ADDED, RESERVED_NUMBER_REMOVED,
+                    ONEOF_ADDED, ENUM_VALUE_ADDED, ENUM_VALUE_NAME_CHANGED -> new StructuredRecommendation(
                     "SCHEMA_CHANGE_REVIEW_REQUIRED",
                     RecommendationSeverity.MEDIUM,
                     fieldName,

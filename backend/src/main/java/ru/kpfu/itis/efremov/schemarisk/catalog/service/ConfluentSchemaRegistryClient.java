@@ -129,7 +129,7 @@ public class ConfluentSchemaRegistryClient {
             ConfluentSchemaRegisterResponse response = restClient.post()
                     .uri("/subjects/{subject}/versions", encodeSubject(subject))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ConfluentSchemaRegisterRequest(schemaType != null ? schemaType.name() : "AVRO", schema))
+                    .body(new ConfluentSchemaRegisterRequest(toConfluentSchemaType(schemaType), schema))
                     .retrieve()
                     .body(ConfluentSchemaRegisterResponse.class);
             if (response == null) {
@@ -163,6 +163,17 @@ public class ConfluentSchemaRegistryClient {
         return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 
+    private String toConfluentSchemaType(SchemaType schemaType) {
+        if (schemaType == null) {
+            return "AVRO";
+        }
+        return switch (schemaType) {
+            case AVRO -> "AVRO";
+            case JSON_SCHEMA -> "JSON";
+            case PROTOBUF -> "PROTOBUF";
+        };
+    }
+
     private Credentials resolveCredentials(ConfluentSchemaRegistryProperties properties) {
         if (hasText(properties.getUsername()) && hasText(properties.getPassword())) {
             return new Credentials(properties.getUsername(), properties.getPassword());
@@ -185,6 +196,7 @@ public class ConfluentSchemaRegistryClient {
             int id,
             int version,
             String subject,
+            String schemaType,
             String schema
     ) {
     }

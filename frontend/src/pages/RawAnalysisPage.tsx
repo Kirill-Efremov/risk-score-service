@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { analysisApi } from "../api/analysisApi";
 import { ErrorAlert } from "../components/common/ErrorAlert";
 import { DecisionBadge } from "../components/risk/DecisionBadge";
@@ -12,26 +12,85 @@ import { SchemaEditor } from "../components/schema/SchemaEditor";
 import { RiskFactorsTable } from "../components/risk/RiskFactorsTable";
 import type { SchemaAnalysisResponse } from "../types/analysis";
 
-const sampleOld = `{
+const samples = {
+  AVRO: {
+    hint: "AVRO uses full compatibility and diff analysis.",
+    oldSchema: `{
   "type": "record",
   "name": "UserCreated",
   "fields": [
     { "name": "id", "type": "string" }
   ]
-}`;
-
-const sampleNew = `{
+}`,
+    newSchema: `{
   "type": "record",
   "name": "UserCreated",
   "fields": [
     { "name": "id", "type": "string" },
     { "name": "email", "type": ["null", "string"], "default": null }
   ]
-}`;
+}`,
+  },
+  JSON_SCHEMA: {
+    hint: "JSON Schema analysis covers properties, required fields, types, enum, constraints and array items.",
+    oldSchema: `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "email": { "type": "string", "minLength": 3 },
+    "address": {
+      "type": "object",
+      "properties": {
+        "zipCode": { "type": "string" }
+      }
+    }
+  },
+  "required": ["id", "email"],
+  "additionalProperties": true
+}`,
+    newSchema: `{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "email": { "type": "string", "minLength": 10 },
+    "middleName": { "type": "string" },
+    "address": {
+      "type": "object",
+      "properties": {
+        "zipCode": { "type": "integer" }
+      }
+    }
+  },
+  "required": ["id", "email"],
+  "additionalProperties": false
+}`,
+  },
+  PROTOBUF: {
+    hint: "Protobuf analysis covers message fields, field numbers, type changes, reserved numbers, oneof and enum changes.",
+    oldSchema: `syntax = "proto3";
+
+message UserCreated {
+  string id = 1;
+  string email = 2;
+}`,
+    newSchema: `syntax = "proto3";
+
+message UserCreated {
+  string id = 1;
+  int32 email = 2;
+  string middle_name = 3;
+}`,
+  },
+};
+
+const schemaTypes = ["AVRO", "JSON_SCHEMA", "PROTOBUF"];
 
 export function RawAnalysisPage() {
-  const [oldSchema, setOldSchema] = useState(sampleOld);
-  const [newSchema, setNewSchema] = useState(sampleNew);
+  const [schemaType, setSchemaType] = useState("AVRO");
+  const [oldSchema, setOldSchema] = useState(samples.AVRO.oldSchema);
+  const [newSchema, setNewSchema] = useState(samples.AVRO.newSchema);
   const [result, setResult] = useState<SchemaAnalysisResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +101,7 @@ export function RawAnalysisPage() {
     try {
       setResult(
         await analysisApi.runRawAnalysis({
-          schemaType: "AVRO",
+          schemaType,
           compatibilityMode: "BACKWARD",
           oldSchema,
           newSchema,
@@ -55,20 +114,51 @@ export function RawAnalysisPage() {
     }
   };
 
+  useEffect(() => {
+    const sample = samples[schemaType as keyof typeof samples];
+    setOldSchema(sample.oldSchema);
+    setNewSchema(sample.newSchema);
+    setResult(null);
+    setError("");
+  }, [schemaType]);
+
   return (
     <div className="space-y-6">
       <div className="panel p-6">
-        <p className="text-sm text-slate-600">
-          Raw-анализ не использует Schema Registry и не публикует схему.
-        </p>
+        <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+          <select
+            className="field"
+            value={schemaType}
+            onChange={(event) => setSchemaType(event.target.value)}
+          >
+            {schemaTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          <p className="text-sm text-slate-600">
+            Raw-analysis does not publish schemas. {samples[schemaType as keyof typeof samples].hint}
+          </p>
+        </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
-        <SchemaEditor title="Old schema" value={oldSchema} onChange={setOldSchema} exampleValue={sampleOld} />
-        <SchemaEditor title="New schema" value={newSchema} onChange={setNewSchema} exampleValue={sampleNew} />
+        <SchemaEditor
+          title="Old schema"
+          value={oldSchema}
+          onChange={setOldSchema}
+          exampleValue={samples[schemaType as keyof typeof samples].oldSchema}
+        />
+        <SchemaEditor
+          title="New schema"
+          value={newSchema}
+          onChange={setNewSchema}
+          exampleValue={samples[schemaType as keyof typeof samples].newSchema}
+        />
       </div>
       <div className="flex gap-3">
         <button className="btn-primary" onClick={submit} disabled={loading}>
-          {loading ? "Анализируем..." : "Запустить анализ"}
+          {loading ? "Analyzing..." : "Run analysis"}
         </button>
       </div>
       <ErrorAlert message={error} />
@@ -95,7 +185,7 @@ export function AnalysisResultView({ result }: { result: SchemaAnalysisResponse 
           <h3 className="text-lg font-semibold">Decision explanation</h3>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {result.decisionExplanation.map((item, index) => (
-              <li key={index}>• {item}</li>
+              <li key={index}>- {item}</li>
             ))}
           </ul>
         </div>

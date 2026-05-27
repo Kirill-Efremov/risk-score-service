@@ -14,6 +14,8 @@ const draftSchema = `{
   ]
 }`;
 
+const schemaTypes = ["AVRO", "JSON_SCHEMA", "PROTOBUF"];
+
 export function VersionedAnalysisPage() {
   const [subject, setSubject] = useState("user-created");
   const [oldVersion, setOldVersion] = useState("1");
@@ -48,7 +50,11 @@ export function VersionedAnalysisPage() {
         <input className="field" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="subject" />
         <input className="field" value={oldVersion} onChange={(e) => setOldVersion(e.target.value)} placeholder="oldVersion" />
         <select className="field" value={schemaType} onChange={(e) => setSchemaType(e.target.value)}>
-          <option value="AVRO">AVRO</option>
+          {schemaTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
         </select>
         <select className="field" value={compatibilityMode} onChange={(e) => setCompatibilityMode(e.target.value)}>
           <option value="BACKWARD">BACKWARD</option>
@@ -63,17 +69,24 @@ export function VersionedAnalysisPage() {
           <input className="field" value={newVersion} onChange={(e) => setNewVersion(e.target.value)} placeholder="newVersion" />
         ) : (
           <button className="btn-primary" onClick={submit}>
-            Запустить versioned-анализ
+            Run versioned analysis
           </button>
         )}
         {mode === "version" ? (
           <button className="btn-primary xl:col-span-6" onClick={submit}>
-            Запустить versioned-анализ
+            Run versioned analysis
           </button>
         ) : null}
       </div>
       {mode === "draft" ? (
-        <SchemaEditor title="Draft schema" value={newSchema} onChange={setNewSchema} exampleValue={draftSchema} />
+        <>
+          {schemaType !== "AVRO" ? (
+            <p className="text-sm text-slate-500">
+              JSON Schema and Protobuf use enhanced project-level analysis for nested fields, constraints and format-specific compatibility signals.
+            </p>
+          ) : null}
+          <SchemaEditor title="Draft schema" value={newSchema} onChange={setNewSchema} exampleValue={draftSchema} />
+        </>
       ) : null}
       <ErrorAlert message={error} />
       {result ? <AnalysisResultView result={result} /> : null}

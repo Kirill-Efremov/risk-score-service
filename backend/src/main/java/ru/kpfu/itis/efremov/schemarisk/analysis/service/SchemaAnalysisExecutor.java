@@ -50,8 +50,14 @@ public class SchemaAnalysisExecutor {
         ParsedSchema newSchema = provider.parseSchema(input.candidateSchema());
 
         CompatibilityMode compatibilityMode = resolveCompatibilityMode(input.compatibilityMode());
-        DiffResult diffResult = buildDiffIfSupported(input.schemaType(), oldSchema, newSchema);
-        CompatibilityResult compatibilityResult = compatibilityEngine.check(oldSchema, newSchema, compatibilityMode);
+        DiffResult diffResult = buildDiff(provider, input.schemaType(), oldSchema, newSchema);
+        CompatibilityResult compatibilityResult = checkCompatibility(
+                provider,
+                input.schemaType(),
+                oldSchema,
+                newSchema,
+                compatibilityMode
+        );
         RiskResult riskResult = riskScorer.score(
                 compatibilityResult,
                 diffResult != null ? diffResult.getChanges() : List.of()
@@ -89,15 +95,29 @@ public class SchemaAnalysisExecutor {
         return compatibilityMode != null ? compatibilityMode : CompatibilityMode.BACKWARD;
     }
 
-    private DiffResult buildDiffIfSupported(
+    private CompatibilityResult checkCompatibility(
+            SchemaProvider provider,
+            SchemaType schemaType,
+            ParsedSchema oldSchema,
+            ParsedSchema newSchema,
+            CompatibilityMode compatibilityMode
+    ) {
+        if (schemaType == SchemaType.AVRO) {
+            return compatibilityEngine.check(oldSchema, newSchema, compatibilityMode);
+        }
+
+        return provider.checkCompatibility(oldSchema, newSchema, compatibilityMode);
+    }
+
+    private DiffResult buildDiff(
+            SchemaProvider provider,
             SchemaType schemaType,
             ParsedSchema oldSchema,
             ParsedSchema newSchema
     ) {
         if (schemaType != SchemaType.AVRO) {
-            return null;
+            return provider.diff(oldSchema, newSchema);
         }
-
         return avroDiffService.diff(
                 (AvroParsedSchema) oldSchema,
                 (AvroParsedSchema) newSchema

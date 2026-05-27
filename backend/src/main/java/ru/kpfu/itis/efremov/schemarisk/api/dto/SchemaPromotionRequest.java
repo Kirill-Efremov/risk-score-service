@@ -8,26 +8,29 @@ import ru.kpfu.itis.efremov.schemarisk.common.model.CompatibilityMode;
 import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 
 @Data
-@Schema(description = "Запрос на контролируемую публикацию схемы")
+@Schema(description = "Controlled schema promotion request")
 public class SchemaPromotionRequest {
 
     @NotNull(message = "schemaType is required")
-    @Schema(description = "Тип схемы", example = "AVRO")
+    @Schema(
+            description = "Schema type: AVRO, JSON_SCHEMA, PROTOBUF. JSON_SCHEMA and PROTOBUF use enhanced project-level compatibility and risk analysis.",
+            example = "AVRO"
+    )
     private SchemaType schemaType;
 
     @Schema(
-            description = "Режим совместимости для анализа. Если не указан, используется политика subject по умолчанию.",
+            description = "Compatibility mode for analysis. If omitted, the subject default policy is used.",
             example = "BACKWARD"
     )
     private CompatibilityMode compatibilityMode;
 
     @NotBlank(message = "schemaText must not be blank")
-    @Schema(description = "Текст новой схемы, которую нужно проанализировать и при необходимости зарегистрировать")
+    @Schema(description = "Candidate schema text to analyze and potentially register")
     private String schemaText;
 
-    @Schema(description = "Опциональное описание версии схемы")
+    @Schema(description = "Optional schema version description")
     private String description;
 
-    @Schema(description = "Кто инициировал controlled promotion flow")
+    @Schema(description = "Legacy initiator field kept for backward compatibility. Backend resolves current user from JWT.")
     private String createdBy;
 }

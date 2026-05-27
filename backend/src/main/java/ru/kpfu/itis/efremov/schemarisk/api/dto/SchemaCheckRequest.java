@@ -12,7 +12,10 @@ import ru.kpfu.itis.efremov.schemarisk.common.model.SchemaType;
 public class SchemaCheckRequest {
 
     @NotNull(message = "schemaType is required")
-    @Schema(description = "Schema type", example = "AVRO")
+    @Schema(
+            description = "Schema type. AVRO has full analysis support; JSON_SCHEMA has enhanced project-level analysis for properties, required fields, types, enums, constraints and arrays; PROTOBUF has enhanced project-level analysis for messages, field numbers, types, labels, oneof, enums and reserved numbers.",
+            example = "AVRO"
+    )
     private SchemaType schemaType;
 
     @Schema(description = "Compatibility mode", example = "BACKWARD")

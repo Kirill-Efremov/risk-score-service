@@ -139,7 +139,8 @@ public class RiskScorer {
                 .anyMatch(changeType -> changeType == FieldChangeType.REMOVED
                         || changeType == FieldChangeType.TYPE_CHANGED
                         || changeType == FieldChangeType.REQUIRED_ADDED
-                        || changeType == FieldChangeType.OPTIONAL_BECAME_REQUIRED);
+                        || changeType == FieldChangeType.OPTIONAL_BECAME_REQUIRED
+                        || diffWeight(changeType) >= 20);
 
         return compatibilityBreaking || diffBreaking;
     }
@@ -163,9 +164,16 @@ public class RiskScorer {
         }
 
         return switch (changeType) {
-            case REMOVED, TYPE_CHANGED, REQUIRED_ADDED -> 25;
-            case OPTIONAL_BECAME_REQUIRED -> 20;
-            case REQUIRED_BECAME_OPTIONAL, NULLABILITY_CHANGED, DEFAULT_REMOVED, NESTED_CHANGED -> 10;
+            case FIELD_NUMBER_REUSED, WIRE_TYPE_CHANGED, ENUM_VALUE_NUMBER_REUSED -> 35;
+            case REMOVED, TYPE_CHANGED, REQUIRED_ADDED, FIELD_REMOVED_WITHOUT_RESERVED, MAP_TYPE_CHANGED,
+                    FIELD_MOVED_TO_ONEOF, FIELD_REMOVED_FROM_ONEOF, ONEOF_REMOVED -> 25;
+            case OPTIONAL_BECAME_REQUIRED, ENUM_RESTRICTED, CONST_CHANGED, ADDITIONAL_PROPERTIES_DISABLED,
+                    STRING_CONSTRAINT_TIGHTENED, NUMERIC_CONSTRAINT_TIGHTENED, ARRAY_CONSTRAINT_CHANGED,
+                    COMPOSITION_CHANGED, FIELD_LABEL_CHANGED, ENUM_VALUE_REMOVED -> 20;
+            case REQUIRED_BECAME_OPTIONAL, NULLABILITY_CHANGED, DEFAULT_REMOVED, NESTED_CHANGED,
+                    FIELD_NAME_CHANGED, RESERVED_NUMBER_REMOVED, ONEOF_ADDED, ENUM_VALUE_NAME_CHANGED -> 10;
+            case ENUM_EXPANDED, ADDITIONAL_PROPERTIES_ENABLED, STRING_CONSTRAINT_RELAXED,
+                    NUMERIC_CONSTRAINT_RELAXED, RESERVED_NUMBER_ADDED, ENUM_VALUE_ADDED -> 6;
             case DEFAULT_CHANGED -> 8;
             case OPTIONAL_ADDED -> 2;
             case DEFAULT_ADDED -> 1;
@@ -183,6 +191,33 @@ public class RiskScorer {
             case TYPE_CHANGED -> "DIFF_FIELD_TYPE_CHANGED";
             case REQUIRED_ADDED -> "DIFF_REQUIRED_FIELD_ADDED";
             case OPTIONAL_BECAME_REQUIRED -> "DIFF_OPTIONAL_BECAME_REQUIRED";
+            case ENUM_RESTRICTED -> "JSON_ENUM_RESTRICTED";
+            case ENUM_EXPANDED -> "JSON_ENUM_EXPANDED";
+            case CONST_CHANGED -> "JSON_CONST_CHANGED";
+            case ADDITIONAL_PROPERTIES_DISABLED -> "JSON_ADDITIONAL_PROPERTIES_DISABLED";
+            case ADDITIONAL_PROPERTIES_ENABLED -> "JSON_ADDITIONAL_PROPERTIES_ENABLED";
+            case STRING_CONSTRAINT_TIGHTENED -> "JSON_CONSTRAINT_TIGHTENED";
+            case STRING_CONSTRAINT_RELAXED -> "JSON_CONSTRAINT_RELAXED";
+            case NUMERIC_CONSTRAINT_TIGHTENED -> "JSON_CONSTRAINT_TIGHTENED";
+            case NUMERIC_CONSTRAINT_RELAXED -> "JSON_CONSTRAINT_RELAXED";
+            case ARRAY_CONSTRAINT_CHANGED -> "JSON_ARRAY_CONSTRAINT_CHANGED";
+            case COMPOSITION_CHANGED -> "JSON_COMPOSITION_CHANGED";
+            case FIELD_NAME_CHANGED -> "PROTO_FIELD_NAME_CHANGED";
+            case FIELD_LABEL_CHANGED -> "PROTO_FIELD_LABEL_CHANGED";
+            case FIELD_NUMBER_REUSED -> "PROTO_FIELD_NUMBER_REUSED";
+            case FIELD_REMOVED_WITHOUT_RESERVED -> "PROTO_FIELD_REMOVED_WITHOUT_RESERVED";
+            case RESERVED_NUMBER_ADDED -> "PROTO_RESERVED_NUMBER_ADDED";
+            case RESERVED_NUMBER_REMOVED -> "PROTO_RESERVED_NUMBER_REMOVED";
+            case ONEOF_ADDED -> "PROTO_ONEOF_ADDED";
+            case ONEOF_REMOVED -> "PROTO_ONEOF_CHANGED";
+            case FIELD_MOVED_TO_ONEOF -> "PROTO_ONEOF_CHANGED";
+            case FIELD_REMOVED_FROM_ONEOF -> "PROTO_ONEOF_CHANGED";
+            case ENUM_VALUE_ADDED -> "PROTO_ENUM_VALUE_ADDED";
+            case ENUM_VALUE_REMOVED -> "PROTO_ENUM_VALUE_REMOVED";
+            case ENUM_VALUE_NUMBER_REUSED -> "PROTO_ENUM_NUMBER_REUSED";
+            case ENUM_VALUE_NAME_CHANGED -> "PROTO_ENUM_VALUE_NAME_CHANGED";
+            case MAP_TYPE_CHANGED -> "PROTO_MAP_TYPE_CHANGED";
+            case WIRE_TYPE_CHANGED -> "PROTO_WIRE_TYPE_CHANGED";
             case REQUIRED_BECAME_OPTIONAL -> "DIFF_REQUIRED_BECAME_OPTIONAL";
             case NULLABILITY_CHANGED -> "DIFF_NULLABILITY_CHANGED";
             case DEFAULT_REMOVED -> "DIFF_DEFAULT_REMOVED";
@@ -207,6 +242,33 @@ public class RiskScorer {
                     + formatTypeDetails(change.getOldType(), change.getNewType());
             case REQUIRED_ADDED -> "Required field '" + fieldName + "' was added";
             case OPTIONAL_BECAME_REQUIRED -> "Optional field '" + fieldName + "' became required";
+            case ENUM_RESTRICTED -> "Allowed enum values for '" + fieldName + "' were restricted";
+            case ENUM_EXPANDED -> "Allowed enum values for '" + fieldName + "' were expanded";
+            case CONST_CHANGED -> "Const value for '" + fieldName + "' was changed";
+            case ADDITIONAL_PROPERTIES_DISABLED -> "Additional JSON properties were disabled at '" + fieldName + "'";
+            case ADDITIONAL_PROPERTIES_ENABLED -> "Additional JSON properties were enabled at '" + fieldName + "'";
+            case STRING_CONSTRAINT_TIGHTENED -> "String constraints were tightened for '" + fieldName + "'";
+            case STRING_CONSTRAINT_RELAXED -> "String constraints were relaxed for '" + fieldName + "'";
+            case NUMERIC_CONSTRAINT_TIGHTENED -> "Numeric constraints were tightened for '" + fieldName + "'";
+            case NUMERIC_CONSTRAINT_RELAXED -> "Numeric constraints were relaxed for '" + fieldName + "'";
+            case ARRAY_CONSTRAINT_CHANGED -> "Array constraints or item type changed for '" + fieldName + "'";
+            case COMPOSITION_CHANGED -> "JSON Schema composition changed for '" + fieldName + "'";
+            case FIELD_NAME_CHANGED -> "Protobuf field name changed at '" + fieldName + "'";
+            case FIELD_LABEL_CHANGED -> "Protobuf field label changed at '" + fieldName + "'";
+            case FIELD_NUMBER_REUSED -> "Protobuf field number was reused at '" + fieldName + "'";
+            case FIELD_REMOVED_WITHOUT_RESERVED -> "Protobuf field was removed without reserving its number: '" + fieldName + "'";
+            case RESERVED_NUMBER_ADDED -> "Protobuf reserved number was added at '" + fieldName + "'";
+            case RESERVED_NUMBER_REMOVED -> "Protobuf reserved number was removed at '" + fieldName + "'";
+            case ONEOF_ADDED -> "Protobuf oneof was added at '" + fieldName + "'";
+            case ONEOF_REMOVED -> "Protobuf oneof was removed at '" + fieldName + "'";
+            case FIELD_MOVED_TO_ONEOF -> "Protobuf field was moved into oneof at '" + fieldName + "'";
+            case FIELD_REMOVED_FROM_ONEOF -> "Protobuf field was removed from oneof at '" + fieldName + "'";
+            case ENUM_VALUE_ADDED -> "Protobuf enum value was added at '" + fieldName + "'";
+            case ENUM_VALUE_REMOVED -> "Protobuf enum value was removed at '" + fieldName + "'";
+            case ENUM_VALUE_NUMBER_REUSED -> "Protobuf enum number was reused at '" + fieldName + "'";
+            case ENUM_VALUE_NAME_CHANGED -> "Protobuf enum value name changed at '" + fieldName + "'";
+            case MAP_TYPE_CHANGED -> "Protobuf map key/value type changed at '" + fieldName + "'";
+            case WIRE_TYPE_CHANGED -> "Protobuf wire type changed at '" + fieldName + "'";
             case REQUIRED_BECAME_OPTIONAL -> "Required field '" + fieldName + "' became optional";
             case NULLABILITY_CHANGED -> "Field '" + fieldName + "' nullability was changed";
             case DEFAULT_REMOVED -> "Default value was removed from field '" + fieldName + "'";

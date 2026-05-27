@@ -85,6 +85,15 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException exception,
             HttpServletRequest request
     ) {
+        if (exception.getMessage() != null && exception.getMessage().contains("Unsupported schema type")) {
+            return buildError(
+                    HttpStatus.BAD_REQUEST,
+                    "UNSUPPORTED_SCHEMA_TYPE",
+                    "Unsupported schema type",
+                    request,
+                    List.of()
+            );
+        }
         return buildError(
                 HttpStatus.BAD_REQUEST,
                 "VALIDATION_ERROR",

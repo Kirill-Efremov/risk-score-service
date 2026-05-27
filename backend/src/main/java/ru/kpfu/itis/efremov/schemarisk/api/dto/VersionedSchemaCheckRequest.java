@@ -25,7 +25,10 @@ public class VersionedSchemaCheckRequest {
     )
     private String newSchema;
 
-    @Schema(description = "Тип схемы, обязателен при передаче newSchema", example = "AVRO")
+    @Schema(
+            description = "Тип схемы, обязателен при передаче newSchema. Поддерживает AVRO, JSON_SCHEMA, PROTOBUF.",
+            example = "AVRO"
+    )
     private SchemaType schemaType;
 
     @Schema(description = "Режим совместимости", example = "BACKWARD")
