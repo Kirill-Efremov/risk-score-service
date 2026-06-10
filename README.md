@@ -35,23 +35,76 @@
 
 ## Запуск через Docker Compose
 
-Из корня репозитория:
+### Требования
+
+Перед запуском должны быть установлены:
+
+* Docker Desktop или Docker Engine;
+* Docker Compose v2.
+
+Проверьте, что Docker daemon запущен:
+
+```bash
+docker version
+docker compose version
+```
+
+### Настройка окружения
+
+Если все параметры уже заданы в `docker-compose.yml`, дополнительная настройка не требуется.
+
+Если проект использует переменные окружения, создайте файл `.env` в корне репозитория на основе примера:
+
+```bash
+cp .env.example .env
+```
+
+Для Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### Запуск
+
+Из корня репозитория выполните:
 
 ```bash
 docker compose up --build
 ```
 
-Состав стенда по `docker-compose.yml`: `frontend`, `backend`, `postgres`, `schema-registry`, `kafka`, `zookeeper`.
-
-## Отдельный запуск backend и frontend
-
-Основной сценарий проекта — запуск через `docker compose`. Frontend и backend собираются и поднимаются контейнерами из общего compose-стенда.
-
-При необходимости frontend можно запустить отдельно из каталога `frontend`:
+Для запуска в фоновом режиме:
 
 ```bash
-npm run dev
+docker compose up -d --build
 ```
+
+Проверить состояние контейнеров:
+
+```bash
+docker compose ps
+```
+
+Посмотреть логи:
+
+```bash
+docker compose logs -f
+```
+
+Остановить окружение:
+
+```bash
+docker compose down
+```
+
+Для остановки с удалением локальных Docker volumes:
+
+```bash
+docker compose down -v
+```
+
+Команда с `-v` удаляет данные PostgreSQL и других сервисов, сохранённые в Docker volumes.
+
 
 ## Основные адреса после запуска
 
@@ -60,28 +113,15 @@ npm run dev
 - Swagger/OpenAPI: `http://localhost:8080/swagger-ui/index.html`, OpenAPI JSON — `http://localhost:8080/v3/api-docs`;
 - Schema Registry: `http://localhost:8081`.
 
-## Аутентификация
-
-- первый зарегистрированный пользователь получает роль `ADMIN`;
-- последующие пользователи получают роль `USER`;
-- JWT передаётся в заголовке `Authorization: Bearer <token>`.
-
-Публичные backend-endpoint'ы: `/api/v1/auth/register`, `/api/v1/auth/login`, `/api/v1/status`, `/v3/api-docs/**`, `/swagger-ui/**`.
 
 ## Основные сценарии
 
-- `Services` — управление producer- и consumer-сервисами, их статусами и привязками к `subject`, которые используются для impact-анализа и контролируемой публикации.
 - `Raw Analysis` — сравнение `oldSchema` и `newSchema` напрямую без обращения к внешнему реестру и без публикации.
 - `Versioned Analysis` — анализ новой схемы относительно версии `subject` из Schema Registry без публикации новой версии.
-- `Controlled Promotion` — анализ новой схемы относительно `latest` версии и публикация только если это допускает policy; рискованные случаи могут уходить в административное согласование.
+- `Controlled Promotion` — анализ новой схемы относительно последней версии и публикация только при выполнении установленных правил допуска; рискованные изменения могут быть направлены на административное согласование.
 - `Impact Analysis` — построение impact-оценки и usage graph по `subject` с учётом producer- и consumer-сервисов.
+- `Services` — управление producer- и consumer-сервисами, их статусами и привязками к subject, которые используются для impact-анализа и контролируемой публикации.
 
-## Ограничения
+## Аутентификация и роли
 
-- Confluent Schema Registry используется как текущая реализация внешнего реестра.
-- Подключение другого реестра требует реализации отдельного интеграционного адаптера.
-- JSON Schema и Protobuf анализируются с учётом основных форматно-специфичных изменений, но система не заменяет полноценный JSON Schema validator или компилятор `protoc`.
-
-## Статус проекта
-
-Проект находится в статусе активной разработки. Текущая реализация покрывает анализ риска изменений схем, историю проверок, impact-анализ, управление пользователями и контролируемую публикацию через интеграцию с Confluent Schema Registry.
+Доступ к основным функциям предоставляется после регистрации и входа в систему. Backend использует JWT-аутентификацию. Пользователям назначаются роли `USER` и `ADMIN`.
