@@ -6,6 +6,7 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
+  UserRound,
   Users,
   Waypoints,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const links = [
   { to: "/history", label: "History", icon: Clock3 },
   { to: "/impact-graph", label: "Impact Graph", icon: Waypoints },
   { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/profile", label: "Profile", icon: UserRound },
 ];
 
 export function Sidebar() {
@@ -84,7 +86,7 @@ export function Sidebar() {
         {isAdmin ? (
           <div className="mt-6">
             <p className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Администрирование
+              Administration
             </p>
             <div className="mt-3 flex flex-col gap-3">
               <NavLink
@@ -98,7 +100,7 @@ export function Sidebar() {
                 }
               >
                 <Users size={20} className="shrink-0" />
-                <span>Пользователи</span>
+                <span>Users</span>
               </NavLink>
               <NavLink
                 to="/admin/schema-approvals"
@@ -111,7 +113,7 @@ export function Sidebar() {
                 }
               >
                 <ShieldAlert size={20} className="shrink-0" />
-                <span>Согласование схем</span>
+                <span>Schema Approvals</span>
               </NavLink>
             </div>
           </div>

@@ -663,7 +663,7 @@ export function ServiceDetailPage() {
           <div className="mt-5 space-y-4">
             {isAdmin ? <ServiceUsageAuditTable records={auditRecords} /> : (
               <p className="text-sm text-slate-600">
-                История аудита доступна только администраторам.
+                Audit history is available to administrators only.
               </p>
             )}
 
@@ -698,7 +698,7 @@ export function ServiceDetailPage() {
 function toErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.payload) {
     if (error.payload.status === 403 || error.payload.errorCode === "ACCESS_DENIED") {
-      return "Недостаточно прав для выполнения операции.";
+      return "You do not have permission to perform this action.";
     }
     return `${error.payload.errorCode}: ${error.payload.message}`;
   }

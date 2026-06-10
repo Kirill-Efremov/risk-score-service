@@ -1,4 +1,5 @@
 import { ApiError } from "../../api/client";
+import { getUserFacingErrorMessage } from "../../utils/errorMessages";
 
 interface ErrorAlertProps {
   title?: string;
@@ -7,8 +8,8 @@ interface ErrorAlertProps {
 }
 
 export function ErrorAlert({ title, message, error }: ErrorAlertProps) {
-  const resolvedTitle = title ?? (error ? "Ошибка запроса" : undefined);
-  const resolvedMessage = message ?? error?.message;
+  const resolvedTitle = title ?? (error ? "Request failed" : undefined);
+  const resolvedMessage = message ?? getUserFacingErrorMessage(error);
 
   if (!resolvedMessage && !error) return null;
 

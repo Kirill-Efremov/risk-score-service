@@ -14,6 +14,8 @@ export interface CurrentUserResponse {
   username: string;
   role: UserRole;
   active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface RegisterRequest {

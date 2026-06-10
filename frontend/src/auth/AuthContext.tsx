@@ -68,7 +68,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
     setAccessToken(token);
     const currentUser = await authApi.me();
-    setUser(currentUser);
+    setUser((existingUser) => ({
+      ...currentUser,
+      createdAt: existingUser?.createdAt ?? null,
+      updatedAt: existingUser?.updatedAt ?? null,
+    }));
   };
 
   useEffect(() => {
@@ -82,7 +86,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       try {
         await refreshCurrentUser();
       } catch (error) {
-        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        if (
+          error instanceof ApiError &&
+          (error.status === 401 || error.status === 403)
+        ) {
           clearStoredAccessToken();
           setAccessToken(null);
           setUser(null);
@@ -127,6 +134,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
           username: response.user.username,
           role: response.user.role,
           active: response.user.active,
+          createdAt: response.user.createdAt ?? null,
+          updatedAt: response.user.updatedAt ?? null,
         });
       },
       register: async (username: string, password: string) => {
@@ -139,6 +148,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
           username: response.user.username,
           role: response.user.role,
           active: response.user.active,
+          createdAt: response.user.createdAt ?? null,
+          updatedAt: response.user.updatedAt ?? null,
         });
       },
       logout: () => {

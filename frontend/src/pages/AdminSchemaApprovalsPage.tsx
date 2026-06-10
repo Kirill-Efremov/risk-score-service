@@ -96,7 +96,7 @@ export function AdminSchemaApprovalsPage() {
       await loadApprovals();
       setSelectedApproval(updated);
       setDecisionComment(updated.adminComment ?? "");
-      setSuccessMessage("Схема опубликована в Schema Registry.");
+      setSuccessMessage("Schema published to Schema Registry.");
     } catch (err) {
       setError(mapApprovalError(err));
     } finally {
@@ -114,7 +114,7 @@ export function AdminSchemaApprovalsPage() {
       await loadApprovals();
       setSelectedApproval(updated);
       setDecisionComment(updated.adminComment ?? "");
-      setSuccessMessage("Заявка отклонена.");
+      setSuccessMessage("Request rejected.");
     } catch (err) {
       setError(mapApprovalError(err));
     } finally {
@@ -138,7 +138,7 @@ export function AdminSchemaApprovalsPage() {
       patchApproval(updated);
       await loadApprovals();
       setSelectedApproval(updated);
-      setSuccessMessage("Схема опубликована в Schema Registry.");
+      setSuccessMessage("Schema published to Schema Registry.");
     } catch (err) {
       setError(mapApprovalError(err));
     } finally {
@@ -162,7 +162,7 @@ export function AdminSchemaApprovalsPage() {
       patchApproval(updated);
       await loadApprovals();
       setSelectedApproval(updated);
-      setSuccessMessage("Заявка отклонена.");
+      setSuccessMessage("Request rejected.");
     } catch (err) {
       setError(mapApprovalError(err));
     } finally {
@@ -184,21 +184,20 @@ export function AdminSchemaApprovalsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">
-              Согласование схем
+              Schema approvals
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Рискованные, но формально совместимые изменения ожидают решения
-              администратора.
+              Risky but formally compatible schema changes are waiting for an administrator decision.
             </p>
           </div>
           <button className="btn-secondary" onClick={() => void loadApprovals()}>
-            Обновить
+            Refresh
           </button>
         </div>
       </section>
 
       <ErrorAlert
-        title="Не удалось выполнить операцию согласования"
+        title="Unable to complete the approval action"
         error={error}
       />
 
@@ -217,7 +216,7 @@ export function AdminSchemaApprovalsPage() {
               setStatusFilter(event.target.value as StatusFilter)
             }
           >
-            <option value="all">Все статусы</option>
+            <option value="all">All statuses</option>
             <option value="PENDING">PENDING</option>
             <option value="PUBLISHED">PUBLISHED</option>
             <option value="REJECTED">REJECTED</option>
@@ -228,10 +227,10 @@ export function AdminSchemaApprovalsPage() {
             className="field"
             value={subjectFilter}
             onChange={(event) => setSubjectFilter(event.target.value)}
-            placeholder="Фильтр по subject"
+            placeholder="Filter by subject"
           />
           <button className="btn-secondary" onClick={() => void loadApprovals()}>
-            Применить
+            Apply
           </button>
         </div>
 
@@ -279,7 +278,7 @@ export function AdminSchemaApprovalsPage() {
                         className="btn-secondary"
                         onClick={() => void openApproval(approval.id)}
                       >
-                        Открыть
+                        Open
                       </button>
                       {approval.status === "PENDING" ? (
                         <>
@@ -288,14 +287,14 @@ export function AdminSchemaApprovalsPage() {
                             disabled={actionLoading}
                             onClick={() => void approveDirect(approval.id)}
                           >
-                            Согласовать
+                            Approve
                           </button>
                           <button
                             className="btn-secondary"
                             disabled={actionLoading}
                             onClick={() => void rejectDirect(approval.id)}
                           >
-                            Отклонить
+                            Reject
                           </button>
                         </>
                       ) : null}
@@ -309,7 +308,7 @@ export function AdminSchemaApprovalsPage() {
 
         {!loading && approvals.length === 0 ? (
           <p className="mt-4 text-sm text-slate-500">
-            Заявки по текущим фильтрам не найдены.
+            No requests found for the current filters.
           </p>
         ) : null}
       </section>
@@ -319,10 +318,10 @@ export function AdminSchemaApprovalsPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <h3 className="text-xl font-semibold text-slate-900">
-                Заявка №{selectedApproval.id}
+                Request #{selectedApproval.id}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Детали согласования и текст схемы перед публикацией.
+                Approval details and the schema text before publication.
               </p>
             </div>
             {selectedApproval.analysisId ? (
@@ -330,7 +329,7 @@ export function AdminSchemaApprovalsPage() {
                 className="btn-secondary"
                 to={`/history/${selectedApproval.analysisId}`}
               >
-                Открыть анализ
+                Open analysis
               </Link>
             ) : null}
           </div>
@@ -401,28 +400,28 @@ export function AdminSchemaApprovalsPage() {
               htmlFor="approval-comment"
               className="text-sm font-medium text-slate-700"
             >
-              Комментарий администратора
+              Administrator comment
             </label>
             <textarea
               id="approval-comment"
               className="field mt-2 min-h-[120px]"
               value={decisionComment}
               onChange={(event) => setDecisionComment(event.target.value)}
-              placeholder="Комментарий к решению"
+              placeholder="Comment for the decision"
             />
           </div>
 
           {selectedApproval.adminComment ? (
             <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
               <span className="font-semibold text-slate-900">
-                Сохраненный комментарий:
+                Saved comment:
               </span>{" "}
               {selectedApproval.adminComment}
             </div>
           ) : null}
 
           <div className="mt-6">
-            <p className="text-sm font-medium text-slate-700">Текст схемы</p>
+            <p className="text-sm font-medium text-slate-700">Schema text</p>
             <pre className="mt-2 overflow-x-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-100">
               {selectedApproval.newSchemaText}
             </pre>
@@ -435,14 +434,14 @@ export function AdminSchemaApprovalsPage() {
                 disabled={actionLoading}
                 onClick={() => void approve()}
               >
-                {actionLoading ? "Обработка..." : "Согласовать"}
+                {actionLoading ? "Processing..." : "Approve"}
               </button>
               <button
                 className="btn-secondary"
                 disabled={actionLoading}
                 onClick={() => void reject()}
               >
-                Отклонить
+                Reject
               </button>
             </div>
           ) : null}
@@ -496,33 +495,33 @@ function formatDate(value?: string | null) {
 
 function mapApprovalError(error: unknown) {
   if (!(error instanceof ApiError)) {
-    return new ApiError("Не удалось выполнить запрос.");
+    return new ApiError("Unable to complete the request.");
   }
 
   if (error.errorCode === "APPROVAL_BASELINE_CHANGED") {
     return new ApiError(
-      "Актуальная версия схемы изменилась после создания заявки. Необходимо выполнить анализ заново.",
+      "The latest schema version changed after the approval request was created. Run the analysis again.",
       error.payload,
     );
   }
 
   if (error.errorCode === "INVALID_APPROVAL_STATE") {
     return new ApiError(
-      "Заявка уже обработана или недоступна для этого действия.",
+      "This approval request has already been processed or is not available for this action.",
       error.payload,
     );
   }
 
   if (error.errorCode === "SCHEMA_REGISTRY_CONFLICT") {
     return new ApiError(
-      "Schema Registry отклонил публикацию схемы.",
+      "Schema Registry rejected the schema publication.",
       error.payload,
     );
   }
 
   if (error.status === 403) {
     return new ApiError(
-      "Недостаточно прав для выполнения операции.",
+      "You do not have permission to perform this action.",
       error.payload,
     );
   }

@@ -8,6 +8,7 @@ import { AnalysisDetailPage } from "./pages/AnalysisDetailPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { ImpactGraphPage } from "./pages/ImpactGraphPage";
 import { LoginPage } from "./pages/LoginPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { PromotionPage } from "./pages/PromotionPage";
 import { RawAnalysisPage } from "./pages/RawAnalysisPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -23,19 +24,118 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/" element={<ProtectedRoute><Navigate to="/promotion" replace /></ProtectedRoute>} />
-        <Route path="/raw-analysis" element={<ProtectedRoute><RawAnalysisPage /></ProtectedRoute>} />
-        <Route path="/versioned-analysis" element={<ProtectedRoute><VersionedAnalysisPage /></ProtectedRoute>} />
-        <Route path="/promotion" element={<ProtectedRoute><PromotionPage /></ProtectedRoute>} />
-        <Route path="/services" element={<ProtectedRoute><ServicesPage /></ProtectedRoute>} />
-        <Route path="/services/:serviceId" element={<ProtectedRoute><ServiceDetailPage /></ProtectedRoute>} />
-        <Route path="/usage-map" element={<ProtectedRoute><UsageMapPage /></ProtectedRoute>} />
-        <Route path="/impact-graph" element={<ProtectedRoute><ImpactGraphPage /></ProtectedRoute>} />
-        <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
-        <Route path="/history/:id" element={<ProtectedRoute><AnalysisDetailPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
-        <Route path="/admin/schema-approvals" element={<AdminRoute><AdminSchemaApprovalsPage /></AdminRoute>} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/promotion" replace />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/raw-analysis"
+          element={
+            <ProtectedRoute>
+              <RawAnalysisPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/versioned-analysis"
+          element={
+            <ProtectedRoute>
+              <VersionedAnalysisPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/promotion"
+          element={
+            <ProtectedRoute>
+              <PromotionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services"
+          element={
+            <ProtectedRoute>
+              <ServicesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services/:serviceId"
+          element={
+            <ProtectedRoute>
+              <ServiceDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/usage-map"
+          element={
+            <ProtectedRoute>
+              <UsageMapPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/impact-graph"
+          element={
+            <ProtectedRoute>
+              <ImpactGraphPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <HistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history/:id"
+          element={
+            <ProtectedRoute>
+              <AnalysisDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/schema-approvals"
+          element={
+            <AdminRoute>
+              <AdminSchemaApprovalsPage />
+            </AdminRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

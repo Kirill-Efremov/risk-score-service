@@ -25,8 +25,15 @@ export function HistoryPage() {
   return (
     <div className="space-y-6">
       <div className="panel flex flex-col gap-4 p-6 md:flex-row">
-        <input className="field" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="subject" />
-        <button className="btn-primary" onClick={loadHistory}>Загрузить history</button>
+        <input
+          className="field"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          placeholder="subject"
+        />
+        <button className="btn-primary" onClick={loadHistory}>
+          Load history
+        </button>
       </div>
       <ErrorAlert message={error} />
       {records.length ? (
@@ -54,7 +61,9 @@ export function HistoryPage() {
                 >
                   <td>{record.id}</td>
                   <td>{record.subject}</td>
-                  <td>{record.oldVersion ?? "-"} → {record.newVersion ?? "-"}</td>
+                  <td>
+                    {record.oldVersion ?? "-"} → {record.newVersion ?? "-"}
+                  </td>
                   <td>
                     <div className="flex items-center gap-2">
                       <span>{record.riskScore}</span>
@@ -62,7 +71,9 @@ export function HistoryPage() {
                     </div>
                   </td>
                   <td>{record.decision}</td>
-                  <td><GovernanceDecisionBadge value={record.governanceDecision} /></td>
+                  <td>
+                    <GovernanceDecisionBadge value={record.governanceDecision} />
+                  </td>
                   <td>
                     {record.promotionAttempted ? (
                       <PromotionStatusBadge value={record.registrationStatus} />

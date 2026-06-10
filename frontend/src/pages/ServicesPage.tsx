@@ -425,7 +425,7 @@ export function ServicesPage() {
               Service management
             </h3>
             <p className="mt-3 text-sm text-slate-600">
-              Создание и изменение сервисов доступно только администраторам.
+              Creating and editing services is available to administrators only.
             </p>
           </section>
         )}
@@ -437,7 +437,7 @@ export function ServicesPage() {
 function toErrorMessage(error: unknown) {
   if (error instanceof ApiError && error.payload) {
     if (error.payload.status === 403 || error.payload.errorCode === "ACCESS_DENIED") {
-      return "Недостаточно прав для выполнения операции.";
+      return "You do not have permission to perform this action.";
     }
     return `${error.payload.errorCode}: ${error.payload.message}`;
   }

@@ -37,7 +37,7 @@ export function ImpactGraphPage() {
           placeholder="subject"
         />
         <button className="btn-primary" onClick={() => void loadGraph()}>
-          Показать граф
+          Show graph
         </button>
       </div>
       <ErrorAlert message={error} />

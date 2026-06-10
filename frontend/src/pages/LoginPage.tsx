@@ -38,7 +38,7 @@ export function LoginPage() {
       if (err instanceof ApiError) {
         setError(err);
       } else {
-        setError(new ApiError("Не удалось выполнить вход"));
+        setError(new ApiError("Unable to log in."));
       }
     } finally {
       setSubmitting(false);
@@ -48,13 +48,11 @@ export function LoginPage() {
   return (
     <div className="panel mx-auto w-full max-w-md p-6 md:p-8">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
-        Вход в систему
+        Account access
       </p>
-      <h1 className="mt-3 text-3xl font-semibold text-slate-900">
-        Авторизация
-      </h1>
+      <h1 className="mt-3 text-3xl font-semibold text-slate-900">Log in</h1>
       <p className="mt-2 text-sm text-slate-600">
-        Используйте учетную запись backend-аутентификации.
+        Use your existing backend authentication account.
       </p>
 
       <div className="mt-6 grid gap-4">
@@ -62,7 +60,7 @@ export function LoginPage() {
           className="field"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
-          placeholder="Имя пользователя"
+          placeholder="Username"
           autoComplete="username"
         />
         <input
@@ -70,18 +68,18 @@ export function LoginPage() {
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Пароль"
+          placeholder="Password"
           autoComplete="current-password"
         />
       </div>
 
       <div className="mt-5">
         <ErrorAlert
-          title="Не удалось выполнить вход"
+          title="Unable to log in"
           error={error}
           message={
             error?.errorCode === "INVALID_CREDENTIALS"
-              ? "Проверьте имя пользователя и пароль"
+              ? "Check your username and password."
               : undefined
           }
         />
@@ -93,10 +91,10 @@ export function LoginPage() {
           onClick={() => void submit()}
           disabled={submitting}
         >
-          {submitting ? "Выполняется вход..." : "Войти"}
+          {submitting ? "Signing in..." : "Log in"}
         </button>
         <Link className="btn-secondary" to="/register">
-          Перейти к регистрации
+          Go to registration
         </Link>
       </div>
     </div>

@@ -14,7 +14,6 @@ import type { SchemaAnalysisResponse } from "../types/analysis";
 
 const samples = {
   AVRO: {
-    hint: "AVRO uses full compatibility and diff analysis.",
     oldSchema: `{
   "type": "record",
   "name": "UserCreated",
@@ -32,7 +31,6 @@ const samples = {
 }`,
   },
   JSON_SCHEMA: {
-    hint: "JSON Schema analysis covers properties, required fields, types, enum, constraints and array items.",
     oldSchema: `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
@@ -68,7 +66,6 @@ const samples = {
 }`,
   },
   PROTOBUF: {
-    hint: "Protobuf analysis covers message fields, field numbers, type changes, reserved numbers, oneof and enum changes.",
     oldSchema: `syntax = "proto3";
 
 message UserCreated {
@@ -137,9 +134,6 @@ export function RawAnalysisPage() {
               </option>
             ))}
           </select>
-          <p className="text-sm text-slate-600">
-            Raw-analysis does not publish schemas. {samples[schemaType as keyof typeof samples].hint}
-          </p>
         </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-2">

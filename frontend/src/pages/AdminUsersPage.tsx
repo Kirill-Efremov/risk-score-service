@@ -93,19 +93,19 @@ export function AdminUsersPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-slate-900">
-              Пользователи
+              Users
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Управление ролями и активностью пользователей.
+              Manage user roles and activation status.
             </p>
           </div>
           <button className="btn-secondary" onClick={() => void loadUsers()}>
-            Обновить
+            Refresh
           </button>
         </div>
       </section>
 
-      <ErrorAlert title="Не удалось выполнить операцию" error={error} />
+      <ErrorAlert title="Unable to complete the operation" error={error} />
 
       <section className="panel p-6">
         <div className="grid gap-3 md:grid-cols-2">
@@ -114,7 +114,7 @@ export function AdminUsersPage() {
             value={roleFilter}
             onChange={(event) => setRoleFilter(event.target.value as RoleFilter)}
           >
-            <option value="all">Все роли</option>
+            <option value="all">All roles</option>
             <option value="ADMIN">ADMIN</option>
             <option value="USER">USER</option>
           </select>
@@ -125,9 +125,9 @@ export function AdminUsersPage() {
               setActiveFilter(event.target.value as ActiveFilter)
             }
           >
-            <option value="all">Все статусы</option>
-            <option value="active">Только активные</option>
-            <option value="inactive">Только неактивные</option>
+            <option value="all">All statuses</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Inactive only</option>
           </select>
         </div>
 
@@ -154,7 +154,7 @@ export function AdminUsersPage() {
                     <td className="font-medium text-slate-900">
                       {user.username}
                       {isSelf ? (
-                        <span className="ml-2 text-xs text-slate-500">(вы)</span>
+                        <span className="ml-2 text-xs text-slate-500">(you)</span>
                       ) : null}
                     </td>
                     <td>
@@ -172,7 +172,7 @@ export function AdminUsersPage() {
                             disabled={saving}
                             onClick={() => void updateRole(user.id, "ADMIN")}
                           >
-                            Сделать ADMIN
+                            Make ADMIN
                           </button>
                         ) : (
                           <button
@@ -180,7 +180,7 @@ export function AdminUsersPage() {
                             disabled={saving || isSelf}
                             onClick={() => void updateRole(user.id, "USER")}
                           >
-                            Сделать USER
+                            Make USER
                           </button>
                         )}
 
@@ -190,7 +190,7 @@ export function AdminUsersPage() {
                             disabled={saving || isSelf}
                             onClick={() => void deactivateUser(user.id)}
                           >
-                            Деактивировать
+                            Deactivate
                           </button>
                         ) : (
                           <button
@@ -198,7 +198,7 @@ export function AdminUsersPage() {
                             disabled={saving}
                             onClick={() => void updateActive(user.id, true)}
                           >
-                            Активировать
+                            Activate
                           </button>
                         )}
                       </div>
@@ -212,7 +212,7 @@ export function AdminUsersPage() {
 
         {!loading && users.length === 0 ? (
           <p className="mt-4 text-sm text-slate-500">
-            Пользователи по текущим фильтрам не найдены.
+            No users found for the current filters.
           </p>
         ) : null}
       </section>
@@ -245,5 +245,5 @@ function toApiError(error: unknown) {
   if (error instanceof ApiError) {
     return error;
   }
-  return new ApiError("Не удалось выполнить запрос");
+  return new ApiError("Unable to complete the request.");
 }

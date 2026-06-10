@@ -91,10 +91,10 @@ export function PromotionPage() {
       <SchemaEditor title="Candidate schema" value={schemaText} onChange={setSchemaText} exampleValue={draftSchema} />
       <div className="flex gap-3">
         <button className="btn-primary" onClick={submit} disabled={loading}>
-          {loading ? "Проверяем..." : "Проверить и опубликовать"}
+          {loading ? "Checking..." : "Check and publish"}
         </button>
       </div>
-      <ErrorAlert title="Не удалось выполнить controlled promotion" error={error} />
+      <ErrorAlert title="Unable to complete controlled promotion" error={error} />
       {result ? (
         <div className="space-y-6">
           <div
@@ -112,14 +112,14 @@ export function PromotionPage() {
             </div>
             {result.registered ? (
               <p className="mt-3 text-sm text-emerald-800">
-                Схема опубликована в Schema Registry.
+                Schema published to Schema Registry.
               </p>
             ) : null}
             {result.approvalRequired ? (
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-amber-900">
                 <span>
-                  Схема не опубликована автоматически. Создана заявка на согласование №
-                  {result.approvalId}. Ожидает решения администратора.
+                  The schema was not published automatically. Approval request #
+                  {result.approvalId} has been created and is waiting for an administrator decision.
                 </span>
                 {isAdmin && result.approvalId ? (
                   <button
@@ -128,7 +128,7 @@ export function PromotionPage() {
                       navigate(`/admin/schema-approvals?approvalId=${result.approvalId}`)
                     }
                   >
-                    Открыть заявку
+                    Open request
                   </button>
                 ) : null}
               </div>
@@ -187,7 +187,7 @@ function toApiError(error: unknown) {
   if (error instanceof ApiError) {
     return error;
   }
-  return new ApiError("Не удалось выполнить запрос");
+  return new ApiError("Unable to complete the request.");
 }
 
 function Summary({ label, value }: { label: string; value: ReactNode }) {

@@ -8,7 +8,7 @@ export function ProtectedRoute({ children }: PropsWithChildren) {
   const location = useLocation();
 
   if (loading) {
-    return <LoadingState label="Загрузка профиля..." />;
+    return <LoadingState label="Loading profile..." />;
   }
 
   if (!isAuthenticated) {

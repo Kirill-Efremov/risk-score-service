@@ -8,7 +8,7 @@ export function AdminRoute({ children }: PropsWithChildren) {
   const location = useLocation();
 
   if (loading) {
-    return <LoadingState label="Загрузка профиля..." />;
+    return <LoadingState label="Loading profile..." />;
   }
 
   if (!isAuthenticated) {
@@ -24,9 +24,9 @@ export function AdminRoute({ children }: PropsWithChildren) {
   if (!isAdmin) {
     return (
       <div className="panel p-6">
-        <h2 className="text-xl font-semibold text-slate-900">Нет доступа</h2>
+        <h2 className="text-xl font-semibold text-slate-900">Access denied</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Для открытия этого раздела требуется роль администратора.
+          This section is available to administrators only.
         </p>
       </div>
     );
